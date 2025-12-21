@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Clinica {
+  id         String      @id @default(cuid())
+  nombre     String
+  direccion  String
+  logoUrl    String?
+  activa     Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  atenciones Atencion[]
+  plantillas Plantilla[]
+}
+
+model Paciente {
+  id             String     @id @default(cuid())
+  nombreCompleto String
+  rut            String     @unique
+  fechaNac       DateTime?
+  prevision      String
+  isapreNombre   String?
+  antecedentes   String?
+  createdAt      DateTime   @default(now())
+  atenciones     Atencion[]
+}
+
+model Atencion {
+  id           String      @id @default(cuid())
+  pacienteId   String
+  clinicaId    String
+  fecha        DateTime    @default(now())
+  diagnostico  String
+  tratamiento  String?
+  indicaciones String?
+  createdAt    DateTime    @default(now())
+  paciente     Paciente    @relation(fields: [pacienteId], references: [id])
+  clinica      Clinica     @relation(fields: [clinicaId], references: [id])
+  documentos   Documento[]
+
+  @@index([pacienteId])
+  @@index([clinicaId])
+}
+
+model Plantilla {
+  id          String      @id @default(cuid())
+  nombre      String
+  tipo        String
+  pdfUrl      String
+  mapeoCampos String
+  clinicaId   String?
+  clinica     Clinica?    @relation(fields: [clinicaId], references: [id])
+  documentos  Documento[]
+
+  @@index([clinicaId])
+}
+
+model Documento {
+  id             String    @id @default(cuid())
+  atencionId     String
+  plantillaId    String
+  pdfGeneradoUrl String?
+  createdAt      DateTime  @default(now())
+  atencion       Atencion  @relation(fields: [atencionId], references: [id])
+  plantilla      Plantilla @relation(fields: [plantillaId], references: [id])
+
+  @@index([atencionId])
+  @@index([plantillaId])
+}

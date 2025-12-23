@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
     if (query) {
       filters.push({
         OR: [
-          { nombreCompleto: { contains: query, mode: 'insensitive' } },
-          { rut: { contains: query, mode: 'insensitive' } },
+          { nombreCompleto: { contains: query } },
+          { rut: { contains: query } },
         ],
       })
     }

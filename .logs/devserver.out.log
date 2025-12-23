@@ -243,3 +243,13 @@
  GET /api/eventos-quirurgicos?pacienteId=cmjj39yxr000p10h8mxgi9u75 200 in 32ms
  GET /api/pacientes/cmjj39yxr000p10h8mxgi9u75 200 in 25ms
  ✓ Compiled in 440ms (668 modules)
+ ✓ Compiled in 197ms (326 modules)
+ ✓ Compiled in 172ms (326 modules)
+ ✓ Compiled in 986ms (326 modules)
+ ✓ Compiled in 182ms (326 modules)
+ ✓ Compiled in 166ms (326 modules)
+ ✓ Compiled in 135ms (326 modules)
+ ✓ Compiled in 155ms (326 modules)
+ ✓ Compiled in 146ms (326 modules)
+ ✓ Compiled in 167ms (326 modules)
+ ✓ Compiled in 152ms (326 modules)

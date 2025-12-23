@@ -22,6 +22,7 @@ export default function Dashboard() {
   const router = useRouter();
   const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [clinicas, setClinicas] = useState<Clinica[]>([]);
   const [clinicaActiva, setClinicaActiva] = useState<string>("");
@@ -42,24 +43,25 @@ export default function Dashboard() {
         }
       })
       .catch(console.error);
-
-    fetch("/api/pacientes?limit=5")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.data) {
-          setPacientes(data.data);
-        }
-      })
-      .catch(console.error);
   }, []);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-
+  const fetchPacientes = async ({
+    query,
+    clinicaId,
+    limit,
+  }: {
+    query?: string;
+    clinicaId?: string;
+    limit?: number;
+  }) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/pacientes?q=${encodeURIComponent(searchQuery)}`);
+      const params = new URLSearchParams();
+      if (query) params.set("q", query);
+      if (clinicaId) params.set("clinicaId", clinicaId);
+      if (limit) params.set("limit", String(limit));
+      const url = params.toString() ? `/api/pacientes?${params}` : "/api/pacientes";
+      const res = await fetch(url);
       const data = await res.json();
       if (data.data) {
         setPacientes(data.data);
@@ -69,6 +71,21 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    const query = submittedQuery.trim();
+    if (query) {
+      fetchPacientes({ query, clinicaId: clinicaActiva || undefined });
+      return;
+    }
+
+    fetchPacientes({ limit: 5, clinicaId: clinicaActiva || undefined });
+  }, [clinicaActiva, submittedQuery]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittedQuery(searchQuery.trim());
   };
 
   const handleSelectPaciente = (pacienteId: string) => {
@@ -189,7 +206,12 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl shadow-sm border">
           <div className="px-6 py-4 border-b">
             <h2 className="text-xl font-semibold text-gray-700">
-              {searchQuery ? "Resultados de busqueda" : "Ultimos pacientes"}
+              {submittedQuery ? "Resultados de busqueda" : "Ultimos pacientes"}
+              {clinicaActiva && clinicas.find(c => c.id === clinicaActiva) && (
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                  (en {clinicas.find(c => c.id === clinicaActiva)?.nombre})
+                </span>
+              )}
             </h2>
           </div>
           <div className="divide-y">

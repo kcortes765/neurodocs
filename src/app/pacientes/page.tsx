@@ -17,6 +17,7 @@ interface Paciente {
 export default function ListaPacientes() {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -25,17 +26,22 @@ export default function ListaPacientes() {
 
   const fetchPacientes = async (query?: string) => {
     setLoading(true);
+    setError(null);
     try {
       const url = query
         ? `/api/pacientes?q=${encodeURIComponent(query)}`
         : "/api/pacientes";
       const res = await fetch(url);
       const data = await res.json();
-      if (data.data) {
+      if (data.data && Array.isArray(data.data)) {
         setPacientes(data.data);
+      } else {
+        setPacientes([]);
       }
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Error al cargar pacientes");
+      setPacientes([]);
     } finally {
       setLoading(false);
     }
@@ -85,6 +91,13 @@ export default function ListaPacientes() {
         >
           + Nuevo Paciente
         </Link>
+
+        {/* Error */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* List */}
         <div className="bg-white rounded-xl shadow-sm border">

@@ -30,6 +30,7 @@ interface EventoQuirurgico {
 export default function ListaEventosQuirurgicos() {
   const [eventos, setEventos] = useState<EventoQuirurgico[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filtroFecha, setFiltroFecha] = useState<"todos" | "proximos" | "pasados">("proximos");
 
   useEffect(() => {
@@ -38,14 +39,19 @@ export default function ListaEventosQuirurgicos() {
 
   const fetchEventos = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/eventos-quirurgicos");
       const data = await res.json();
-      if (data.data) {
+      if (data.data && Array.isArray(data.data)) {
         setEventos(data.data);
+      } else {
+        setEventos([]);
       }
-    } catch (error) {
-      console.error("Error:", error);
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Error al cargar eventos");
+      setEventos([]);
     } finally {
       setLoading(false);
     }
@@ -119,6 +125,13 @@ export default function ListaEventosQuirurgicos() {
             Todos
           </button>
         </div>
+
+        {/* Error */}
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* List */}
         <div className="bg-white rounded-xl shadow-sm border">

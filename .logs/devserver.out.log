@@ -191,3 +191,55 @@
  ✓ Compiled in 384ms (668 modules)
  ✓ Compiled in 444ms (668 modules)
  ✓ Compiled in 284ms (326 modules)
+ ✓ Compiled in 193ms (326 modules)
+ GET /pacientes 200 in 218ms
+ ✓ Compiled /api/pacientes in 156ms (374 modules)
+ ✓ Compiled (631 modules)
+ GET /favicon.ico 200 in 1527ms
+ GET /api/pacientes 200 in 1439ms
+ GET /api/auth/session 200 in 1459ms
+ GET /api/auth/session 200 in 94ms
+ ✓ Compiled / in 281ms (635 modules)
+ GET /api/pacientes 200 in 486ms
+ GET /favicon.ico 200 in 26ms
+ ✓ Compiled /api/clinicas in 166ms (637 modules)
+ GET /api/pacientes?limit=5 200 in 362ms
+ GET /api/clinicas 200 in 380ms
+ GET /api/pacientes?limit=5 200 in 26ms
+ GET /api/clinicas 200 in 24ms
+ GET /favicon.ico 200 in 23ms
+ GET /api/pacientes 200 in 23ms
+ GET /api/pacientes 200 in 15ms
+ GET /favicon.ico 200 in 25ms
+ GET /api/clinicas 200 in 23ms
+ GET /api/pacientes?limit=5 200 in 29ms
+ GET /api/clinicas 200 in 14ms
+ GET /api/pacientes?limit=5 200 in 20ms
+ GET /favicon.ico 200 in 16ms
+ ✓ Compiled /api/eventos-quirurgicos in 167ms (639 modules)
+ GET /api/eventos-quirurgicos 200 in 218ms
+ GET /api/eventos-quirurgicos 200 in 21ms
+ GET /favicon.ico 200 in 27ms
+ ✓ Compiled /api/pacientes/[id] in 173ms (641 modules)
+ GET /api/eventos-quirurgicos?pacienteId=cmjj39yz5001410h8led1vy7r 200 in 387ms
+ GET /api/pacientes/cmjj39yz5001410h8led1vy7r 200 in 407ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj39yz5001410h8led1vy7r 200 in 25ms
+ GET /api/pacientes/cmjj39yz5001410h8led1vy7r 200 in 22ms
+ GET /favicon.ico 200 in 25ms
+ GET /api/pacientes 200 in 30ms
+ GET /api/pacientes 200 in 16ms
+ GET /favicon.ico 200 in 34ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj39yxr000p10h8mxgi9u75 200 in 40ms
+ GET /api/pacientes/cmjj39yxr000p10h8mxgi9u75 200 in 38ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj39yxr000p10h8mxgi9u75 200 in 28ms
+ GET /api/pacientes/cmjj39yxr000p10h8mxgi9u75 200 in 24ms
+ GET /api/auth/session 200 in 68ms
+ GET /pacientes/cmjj39yxr000p10h8mxgi9u75 200 in 140ms
+ GET /favicon.ico 200 in 14ms
+ GET /api/auth/session 200 in 42ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj39yxr000p10h8mxgi9u75 200 in 55ms
+ GET /api/pacientes/cmjj39yxr000p10h8mxgi9u75 200 in 55ms
+ GET /api/auth/session 200 in 48ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj39yxr000p10h8mxgi9u75 200 in 32ms
+ GET /api/pacientes/cmjj39yxr000p10h8mxgi9u75 200 in 25ms
+ ✓ Compiled in 440ms (668 modules)

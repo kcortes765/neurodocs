@@ -341,6 +341,90 @@ Elimina una atención.
 
 ---
 
+## Eventos Quirurgicos
+
+### GET /api/eventos-quirurgicos
+
+Lista eventos quirurgicos con filtros opcionales.
+
+**Query Parameters:**
+- `pacienteId` (opcional): Filtra por paciente
+- `clinicaId` (opcional): Filtra por clinica
+
+### POST /api/eventos-quirurgicos
+
+Crea un nuevo evento quirurgico.
+
+**Body (minimo):**
+```json
+{
+  "pacienteId": "...",
+  "clinicaId": "...",
+  "fechaCirugia": "2025-01-15",
+  "diagnostico": "Hernia discal L4-L5"
+}
+```
+
+**Campos opcionales:**
+- `codigoCie10`
+- `procedimientoId`
+- `lateralidad`
+- `alergiaLatex`, `requiereBiopsia`, `requiereRayos`
+- `cirujanoId`, `anestesistaId`, `arsenaleraId`, `ayudante1Id`, `ayudante2Id`
+- `riesgosDescripcion`
+
+### GET /api/eventos-quirurgicos/[id]
+
+Obtiene un evento quirurgico por ID con paciente, clinica, procedimiento y equipo.
+
+---
+
+## Equipo Medico
+
+### GET /api/equipos-medicos
+
+Lista miembros del equipo medico.
+
+**Query Parameters:**
+- `rol` (opcional): filtra por rol (cirujano, anestesista, ayudante, arsenalera)
+- `activo` (opcional): true/false
+
+### POST /api/equipos-medicos
+
+**Body:**
+```json
+{
+  "nombre": "Dra. Camila Perez",
+  "rut": "22222222-2",
+  "rol": "anestesista"
+}
+```
+
+---
+
+## Procedimientos
+
+### GET /api/procedimientos
+
+Lista procedimientos disponibles.
+
+**Query Parameters:**
+- `q` (opcional): busqueda por codigo o descripcion
+- `tipo` (opcional): filtra por tipo
+
+### POST /api/procedimientos
+
+**Body:**
+```json
+{
+  "codigoFonasa": "100201",
+  "descripcion": "Microdiscectomia",
+  "tipo": "columna"
+}
+```
+
+---
+
 ## Documentos
 
 ### GET /api/documentos/generar

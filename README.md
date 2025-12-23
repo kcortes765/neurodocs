@@ -1,6 +1,6 @@
 # NeuroDoc Automator
 
-Aplicacion Next.js para registro de pacientes, atenciones y generacion de PDFs (mock).
+Aplicacion Next.js para registro de pacientes, atenciones y eventos quirurgicos con generacion de PDFs.
 
 ## Requisitos
 
@@ -13,6 +13,11 @@ Aplicacion Next.js para registro de pacientes, atenciones y generacion de PDFs (
 2. npm run setup
 3. npm run dev
 4. abrir http://localhost:3000
+
+## Debug rapido
+
+- npm run doctor (verifica Node, DB y plantillas)
+- npm run dev:doctor (doctor + servidor dev)
 
 ## Bootstrap (todo en uno)
 

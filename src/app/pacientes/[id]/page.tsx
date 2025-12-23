@@ -17,6 +17,17 @@ interface Atencion {
   clinica?: Clinica | null;
 }
 
+interface EventoQuirurgico {
+  id: string;
+  fechaCirugia: string;
+  diagnostico: string;
+  clinica?: Clinica | null;
+  procedimiento?: {
+    codigoFonasa: string;
+    descripcion: string;
+  } | null;
+}
+
 interface Paciente {
   id: string;
   nombreCompleto: string;
@@ -37,6 +48,7 @@ const formatDate = (value?: string | null) => {
 
 export default function PacienteDetalle({ params }: { params: { id: string } }) {
   const [paciente, setPaciente] = useState<Paciente | null>(null);
+  const [eventos, setEventos] = useState<EventoQuirurgico[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -47,15 +59,24 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/pacientes/${params.id}`);
-        const json = await res.json();
+        const [pacienteRes, eventosRes] = await Promise.all([
+          fetch(`/api/pacientes/${params.id}`),
+          fetch(`/api/eventos-quirurgicos?pacienteId=${params.id}`),
+        ]);
 
-        if (!res.ok) {
+        const json = await pacienteRes.json();
+        const eventosJson = await eventosRes.json();
+
+        if (!pacienteRes.ok) {
           throw new Error(json.error || "Error cargando paciente");
+        }
+        if (!eventosRes.ok) {
+          throw new Error(eventosJson.error || "Error cargando eventos");
         }
 
         if (active) {
           setPaciente(json.data);
+          setEventos(eventosJson.data || []);
         }
       } catch (err) {
         if (active) {
@@ -140,6 +161,13 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
               + Nueva Atencion
             </Link>
 
+            <Link
+              href={`/eventos-quirurgicos/${paciente.id}`}
+              className="block w-full px-6 py-4 text-lg font-semibold text-center text-white bg-blue-600 rounded-xl hover:bg-blue-700"
+            >
+              + Nuevo Evento Quirurgico
+            </Link>
+
             <div className="bg-white rounded-xl shadow-sm border">
               <div className="px-6 py-4 border-b">
                 <h2 className="text-xl font-semibold text-gray-700">Atenciones</h2>
@@ -168,6 +196,42 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
                         </div>
                         <span className="text-sm text-gray-500">
                           {formatDate(atencion.fecha)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border">
+              <div className="px-6 py-4 border-b">
+                <h2 className="text-xl font-semibold text-gray-700">Eventos quirurgicos</h2>
+              </div>
+              {eventos.length === 0 ? (
+                <div className="px-6 py-8 text-center text-gray-500 text-lg">
+                  Sin eventos registrados
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {eventos.map((evento) => (
+                    <div key={evento.id} className="px-6 py-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-lg font-medium text-gray-800">
+                            {evento.diagnostico}
+                          </p>
+                          <p className="text-gray-500">
+                            {evento.clinica?.nombre || "Clinica sin nombre"}
+                          </p>
+                          {evento.procedimiento && (
+                            <p className="text-sm text-gray-500">
+                              {evento.procedimiento.codigoFonasa} - {evento.procedimiento.descripcion}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(evento.fechaCirugia)}
                         </span>
                       </div>
                     </div>

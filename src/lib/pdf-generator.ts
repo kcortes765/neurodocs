@@ -216,7 +216,7 @@ export async function injectCheckboxes(
         continue;
       }
 
-      if ('x' in mapping && 'y' in mapping) {
+      if ('x' in mapping && 'y' in mapping && typeof mapping.x === 'number' && typeof mapping.y === 'number') {
         if (value === true || value === 'true' || value === 'si') {
           firstPage.drawText('X', {
             x: mapping.x,

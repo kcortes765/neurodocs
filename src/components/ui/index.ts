@@ -12,3 +12,6 @@ export type { CardProps } from './Card';
 
 export { SearchInput } from './SearchInput';
 export type { SearchInputProps } from './SearchInput';
+
+export { Toggle } from './Toggle';
+export type { ToggleProps } from './Toggle';

@@ -32,16 +32,30 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get('q')
     const limit = searchParams.get('limit')
+    const clinicaId = searchParams.get('clinicaId')
+
+    const filters: Array<Record<string, unknown>> = []
+
+    if (query) {
+      filters.push({
+        OR: [
+          { nombreCompleto: { contains: query, mode: 'insensitive' } },
+          { rut: { contains: query, mode: 'insensitive' } },
+        ],
+      })
+    }
+
+    if (clinicaId) {
+      filters.push({
+        OR: [
+          { atenciones: { some: { clinicaId } } },
+          { eventosQuirurgicos: { some: { clinicaId } } },
+        ],
+      })
+    }
 
     const pacientes = await prisma.paciente.findMany({
-      where: query
-        ? {
-            OR: [
-              { nombreCompleto: { contains: query } },
-              { rut: { contains: query } },
-            ],
-          }
-        : undefined,
+      where: filters.length ? { AND: filters } : undefined,
       orderBy: { createdAt: 'desc' },
       take: limit ? parseInt(limit) : undefined,
       include: {

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 
 interface Paciente {
   id: string;
   nombreCompleto: string;
   rut: string;
+  prevision?: string;
   createdAt: string;
 }
 
@@ -18,6 +20,7 @@ interface Clinica {
 
 export default function Dashboard() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState("");
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [clinicas, setClinicas] = useState<Clinica[]>([]);
@@ -78,28 +81,68 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">NeuroDoc</h1>
-          <div className="flex items-center gap-4">
-            <select
-              value={clinicaActiva}
-              onChange={(e) => {
-                setClinicaActiva(e.target.value);
-                localStorage.setItem("clinicaActiva", e.target.value);
-              }}
-              className="px-4 py-2 text-lg border rounded-lg bg-white"
-            >
-              <option value="">Seleccionar clinica...</option>
-              {clinicas.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
+      <header className="bg-blue-700 shadow-lg">
+        <div className="max-w-5xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                <span className="text-2xl">🧠</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">NeuroDoc</h1>
+                <p className="text-blue-200 text-sm">Sistema de Documentacion Medica</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <select
+                value={clinicaActiva}
+                onChange={(e) => {
+                  setClinicaActiva(e.target.value);
+                  localStorage.setItem("clinicaActiva", e.target.value);
+                }}
+                className="px-4 py-3 text-lg border-2 border-blue-500 rounded-xl bg-white font-medium min-w-[250px]"
+              >
+                <option value="">Seleccionar clinica...</option>
+                {clinicas.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+              {session && (
+                <button
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="px-4 py-3 text-lg font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-500 transition-colors"
+                >
+                  Salir
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Navigation */}
+          <nav className="mt-4 flex gap-2">
+            <Link
+              href="/"
+              className="px-4 py-2 text-lg font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-500"
+            >
+              Inicio
+            </Link>
+            <Link
+              href="/pacientes"
+              className="px-4 py-2 text-lg font-medium text-blue-200 hover:text-white hover:bg-blue-600 rounded-lg"
+            >
+              Pacientes
+            </Link>
+            <Link
+              href="/eventos-quirurgicos"
+              className="px-4 py-2 text-lg font-medium text-blue-200 hover:text-white hover:bg-blue-600 rounded-lg"
+            >
+              Cirugias
+            </Link>
+          </nav>
         </div>
       </header>
 
@@ -175,16 +218,29 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 grid grid-cols-2 gap-4">
-          <Link
-            href="/pacientes"
-            className="px-6 py-4 text-lg font-medium text-center text-gray-700 bg-white border rounded-xl hover:bg-gray-50"
-          >
-            Ver todos los pacientes
-          </Link>
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">Acciones Rapidas</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <Link
+              href="/pacientes"
+              className="px-6 py-5 text-lg font-medium text-center text-gray-700 bg-white border-2 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-colors"
+            >
+              📋 Ver todos los pacientes
+            </Link>
+            <Link
+              href="/eventos-quirurgicos"
+              className="px-6 py-5 text-lg font-medium text-center text-gray-700 bg-white border-2 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-colors"
+            >
+              🏥 Ver cirugias programadas
+            </Link>
+          </div>
+        </div>
+
+        {/* Seed Data (solo desarrollo) */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
           <button
             onClick={async () => {
-              if (confirm("Generar 20 pacientes de prueba con atenciones?")) {
+              if (confirm("Generar 20 pacientes de prueba con atenciones y cirugias?")) {
                 setLoading(true);
                 try {
                   await fetch("/api/seed", {
@@ -202,9 +258,9 @@ export default function Dashboard() {
               }
             }}
             disabled={loading}
-            className="px-6 py-4 text-lg font-medium text-center text-gray-700 bg-white border rounded-xl hover:bg-gray-50 disabled:opacity-50"
+            className="w-full px-6 py-4 text-lg font-medium text-center text-gray-500 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50 transition-colors"
           >
-            Generar datos de prueba
+            {loading ? "Generando..." : "🧪 Generar datos de prueba"}
           </button>
         </div>
       </main>

@@ -95,7 +95,7 @@ const checkDatabase = () => {
 const listPdfFiles = (dir) => {
   try {
     return readdirSync(dir).filter((file) => file.toLowerCase().endsWith('.pdf'));
-  } catch (error) {
+  } catch {
     return [];
   }
 };

@@ -139,8 +139,82 @@ export const documentos = {
     return fetchAPI('/documentos/generar')
   },
 
-  generar: async (data: { atencionId: string; tipos?: string[] }) => {
+  generar: async (data: {
+    atencionId?: string
+    eventoQuirurgicoId?: string
+    tipos?: string[]
+  }) => {
     return fetchAPI('/documentos/generar', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+}
+
+export const eventosQuirurgicos = {
+  listar: async (filtros?: { pacienteId?: string; clinicaId?: string }) => {
+    const params = new URLSearchParams()
+    if (filtros?.pacienteId) params.append('pacienteId', filtros.pacienteId)
+    if (filtros?.clinicaId) params.append('clinicaId', filtros.clinicaId)
+    const queryString = params.toString() ? `?${params.toString()}` : ''
+    return fetchAPI(`/eventos-quirurgicos${queryString}`)
+  },
+
+  obtener: async (id: string) => {
+    return fetchAPI(`/eventos-quirurgicos/${id}`)
+  },
+
+  crear: async (data: {
+    pacienteId: string
+    clinicaId: string
+    fechaCirugia: string
+    diagnostico: string
+    codigoCie10?: string
+    procedimientoId?: string
+    lateralidad?: string
+    alergiaLatex?: boolean
+    requiereBiopsia?: boolean
+    requiereRayos?: boolean
+    cirujanoId?: string
+    anestesistaId?: string
+    arsenaleraId?: string
+    ayudante1Id?: string
+    ayudante2Id?: string
+    riesgosDescripcion?: string
+  }) => {
+    return fetchAPI('/eventos-quirurgicos', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+}
+
+export const equiposMedicos = {
+  listar: async (rol?: string) => {
+    const params = new URLSearchParams()
+    if (rol) params.append('rol', rol)
+    const queryString = params.toString() ? `?${params.toString()}` : ''
+    return fetchAPI(`/equipos-medicos${queryString}`)
+  },
+
+  crear: async (data: { nombre: string; rut: string; rol: string; activo?: boolean }) => {
+    return fetchAPI('/equipos-medicos', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+}
+
+export const procedimientos = {
+  listar: async (query?: string) => {
+    const params = new URLSearchParams()
+    if (query) params.append('q', query)
+    const queryString = params.toString() ? `?${params.toString()}` : ''
+    return fetchAPI(`/procedimientos${queryString}`)
+  },
+
+  crear: async (data: { codigoFonasa: string; descripcion: string; tipo?: string }) => {
+    return fetchAPI('/procedimientos', {
       method: 'POST',
       body: JSON.stringify(data),
     })
@@ -167,6 +241,9 @@ const apiClient = {
   clinicas,
   atenciones,
   documentos,
+  eventosQuirurgicos,
+  equiposMedicos,
+  procedimientos,
   seed,
 }
 

@@ -1,13 +1,185 @@
 
 > neurodata@0.1.0 dev
-> next dev
+> next dev -p 3004
 
   ▲ Next.js 14.2.35
-  - Local:        http://localhost:3000
+  - Local:        http://localhost:3004
   - Environments: .env
 
  ✓ Starting...
- ✓ Ready in 2.2s
+ ✓ Ready in 2.9s
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 1477ms (171 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 6.4s (629 modules)
+ GET / 200 in 6876ms
+ ✓ Compiled in 533ms (305 modules)
  ○ Compiling /api/clinicas ...
- ✓ Compiled /api/clinicas in 543ms (58 modules)
- GET /api/clinicas 200 in 768ms
+ ✓ Compiled /api/clinicas in 1914ms (347 modules)
+ ✓ Compiled (606 modules)
+ GET /favicon.ico 200 in 3324ms
+ GET /api/clinicas 200 in 3217ms
+ GET /api/pacientes?limit=5 200 in 3219ms
+ GET /api/clinicas 200 in 18ms
+ GET /api/pacientes?limit=5 200 in 24ms
+ GET /api/auth/session 200 in 3945ms
+ GET /api/auth/session 200 in 25ms
+ GET /api/auth/session 200 in 24ms
+ ✓ Compiled /login in 367ms (903 modules)
+ GET /login?callbackUrl=%2F 200 in 556ms
+ ✓ Compiled /_not-found in 280ms (906 modules)
+ GET /_next/static/webpack/a2ef653e4ced9036.webpack.hot-update.json 404 in 387ms
+ GET / 200 in 53ms
+ GET /favicon.ico 200 in 26ms
+ GET /api/auth/session 200 in 65ms
+ GET /api/auth/session 200 in 14ms
+ GET /favicon.ico 200 in 11ms
+ GET /api/auth/session 200 in 33ms
+ GET /api/clinicas 200 in 47ms
+ GET /api/pacientes?limit=5 200 in 50ms
+ GET /api/auth/session 200 in 51ms
+ GET /api/clinicas 200 in 17ms
+ GET /api/pacientes?limit=5 200 in 23ms
+ GET /api/auth/providers 200 in 20ms
+ GET /api/auth/csrf 200 in 14ms
+ POST /api/auth/callback/credentials 200 in 15ms
+ GET /api/auth/session 200 in 11ms
+ GET /favicon.ico 200 in 22ms
+ GET /api/clinicas 200 in 27ms
+ GET /api/pacientes?limit=5 200 in 27ms
+ GET /api/clinicas 200 in 14ms
+ GET /api/pacientes?limit=5 200 in 20ms
+ ✓ Compiled /pacientes in 265ms (912 modules)
+ GET /favicon.ico 200 in 17ms
+ GET /api/pacientes 200 in 18ms
+ GET /api/pacientes 200 in 15ms
+ ✓ Compiled /pacientes/[id] in 294ms (918 modules)
+ GET /favicon.ico 200 in 26ms
+ ✓ Compiled /api/pacientes/[id] in 173ms (621 modules)
+ ✓ Compiled (623 modules)
+ GET /api/eventos-quirurgicos?pacienteId=cmjj3a59n001t10h87wi7hicg 200 in 407ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj3a59n001t10h87wi7hicg 200 in 14ms
+ GET /api/pacientes/cmjj3a59n001t10h87wi7hicg 200 in 890ms
+ GET /api/pacientes/cmjj3a59n001t10h87wi7hicg 200 in 24ms
+ ✓ Compiled /eventos-quirurgicos/[id] in 431ms (950 modules)
+ GET /favicon.ico 200 in 37ms
+ ✓ Compiled /api/procedimientos in 224ms (640 modules)
+ ✓ Compiled (642 modules)
+ GET /api/clinicas 200 in 472ms
+ GET /api/pacientes/cmjj3a59n001t10h87wi7hicg 200 in 472ms
+ GET /api/equipos-medicos 200 in 498ms
+ GET /api/procedimientos 200 in 500ms
+ GET /api/clinicas 200 in 38ms
+ GET /api/pacientes/cmjj3a59n001t10h87wi7hicg 200 in 39ms
+ GET /api/equipos-medicos 200 in 36ms
+ GET /api/procedimientos 200 in 40ms
+ POST /api/eventos-quirurgicos 201 in 48ms
+ ○ Compiling /api/documentos/generar ...
+ ✓ Compiled /api/documentos/generar in 1955ms (869 modules)
+ POST /api/documentos/generar 200 in 2257ms
+ ✓ Compiled /api/auth/[...nextauth] in 388ms (775 modules)
+ GET /api/auth/session 200 in 576ms
+ GET /api/auth/session 200 in 24ms
+ ✓ Compiled /api/pacientes/[id] in 180ms (804 modules)
+ ✓ Compiled (806 modules)
+ GET /favicon.ico 200 in 456ms
+ GET /api/pacientes/cmjj3a59n001t10h87wi7hicg 200 in 464ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj3a59n001t10h87wi7hicg 200 in 481ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj3a59n001t10h87wi7hicg 200 in 23ms
+ GET /api/pacientes/cmjj3a59n001t10h87wi7hicg 200 in 22ms
+ ✓ Compiled /pacientes in 362ms (810 modules)
+ GET /favicon.ico 200 in 38ms
+ ✓ Compiled /api/pacientes in 245ms (812 modules)
+ GET /api/pacientes 200 in 329ms
+ GET /api/auth/session 200 in 137ms
+ GET /api/pacientes 200 in 15ms
+ GET /api/auth/session 200 in 26ms
+ GET /api/pacientes 200 in 16ms
+ GET /api/pacientes 200 in 16ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj3a59a001o10h8jxpz8oes 200 in 35ms
+ GET /api/pacientes/cmjj3a59a001o10h8jxpz8oes 200 in 35ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj3a59a001o10h8jxpz8oes 200 in 21ms
+ GET /api/pacientes/cmjj3a59a001o10h8jxpz8oes 200 in 20ms
+ GET /api/pacientes 200 in 16ms
+ GET /api/pacientes 200 in 15ms
+ ✓ Compiled /api/clinicas in 186ms (814 modules)
+ GET /api/pacientes?limit=5 200 in 384ms
+ GET /api/clinicas 200 in 400ms
+ GET /api/pacientes?limit=5 200 in 21ms
+ GET /api/clinicas 200 in 23ms
+ ✓ Compiled /eventos-quirurgicos in 401ms (1130 modules)
+ GET /api/eventos-quirurgicos 200 in 24ms
+ GET /api/eventos-quirurgicos 200 in 20ms
+ ✓ Compiled /api/procedimientos in 296ms (820 modules)
+ ✓ Compiled (822 modules)
+ GET /api/clinicas 200 in 561ms
+ GET /api/pacientes/cmjj39yzg001810h8bfe8dipp 404 in 558ms
+ GET /api/procedimientos 200 in 577ms
+ GET /api/equipos-medicos 200 in 579ms
+ GET /api/clinicas 200 in 35ms
+ GET /api/pacientes/cmjj39yzg001810h8bfe8dipp 404 in 38ms
+ GET /api/procedimientos 200 in 34ms
+ GET /api/equipos-medicos 200 in 39ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj39yzg001810h8bfe8dipp 200 in 25ms
+ GET /api/pacientes/cmjj39yzg001810h8bfe8dipp 404 in 40ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj39yzg001810h8bfe8dipp 200 in 26ms
+ GET /api/pacientes/cmjj39yzg001810h8bfe8dipp 404 in 25ms
+ GET /api/pacientes 200 in 16ms
+ GET /api/pacientes 200 in 15ms
+ GET /api/clinicas 200 in 22ms
+ GET /api/pacientes?limit=5 200 in 31ms
+ GET /api/clinicas 200 in 22ms
+ GET /api/pacientes?limit=5 200 in 24ms
+ GET /api/auth/session 200 in 34ms
+ GET /api/auth/session 200 in 33ms
+ GET /api/eventos-quirurgicos 200 in 20ms
+ GET /api/eventos-quirurgicos 200 in 17ms
+ GET /api/clinicas 200 in 39ms
+ GET /api/procedimientos 200 in 47ms
+ GET /api/equipos-medicos 200 in 49ms
+ GET /api/pacientes/cmjj3a58q001i10h8a7t3penk 404 in 63ms
+ GET /api/procedimientos 200 in 35ms
+ GET /api/clinicas 200 in 44ms
+ GET /api/equipos-medicos 200 in 48ms
+ GET /api/pacientes/cmjj3a58q001i10h8a7t3penk 404 in 42ms
+ GET /api/auth/session 200 in 24ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj3a58q001i10h8a7t3penk 200 in 25ms
+ GET /api/pacientes/cmjj3a58q001i10h8a7t3penk 404 in 40ms
+ GET /api/eventos-quirurgicos?pacienteId=cmjj3a58q001i10h8a7t3penk 200 in 24ms
+ GET /api/pacientes/cmjj3a58q001i10h8a7t3penk 404 in 28ms
+ GET /api/pacientes 200 in 16ms
+ GET /api/pacientes 200 in 18ms
+ GET /api/auth/session 200 in 29ms
+ GET /api/clinicas 200 in 16ms
+ GET /api/pacientes?limit=5 200 in 25ms
+ GET /api/clinicas 200 in 19ms
+ GET /api/pacientes?limit=5 200 in 21ms
+ GET /api/auth/session 200 in 31ms
+ GET /api/pacientes 200 in 15ms
+ GET /api/pacientes 200 in 16ms
+ GET /api/clinicas 200 in 22ms
+ GET /api/pacientes?limit=5 200 in 34ms
+ GET /api/clinicas 200 in 24ms
+ GET /api/pacientes?limit=5 200 in 25ms
+ GET /api/eventos-quirurgicos 200 in 23ms
+ GET /api/eventos-quirurgicos 200 in 22ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 529ms (925 modules)
+ GET /api/auth/session 404 in 730ms
+ POST /api/auth/_log 404 in 55ms
+ GET / 404 in 48ms
+ GET /_next/static/css/app/layout.css?v=1766526876874 404 in 70ms
+ GET /_next/static/chunks/app/layout.js 404 in 67ms
+ GET /_next/static/chunks/main-app.js?v=1766526876874 404 in 71ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 67ms
+   Reload env: .env
+ ✓ Compiled in 448ms (1096 modules)
+ GET /pacientes 404 in 110ms
+ GET /_next/static/css/app/layout.css?v=1766526889992 404 in 47ms
+ GET /_next/static/chunks/main-app.js?v=1766526889992 404 in 81ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 72ms
+ GET /_next/static/chunks/app/layout.js 404 in 34ms
+ ✓ Compiled /favicon.ico in 227ms (640 modules)
+ GET /favicon.ico 200 in 322ms
+ ✓ Compiled in 190ms (328 modules)
+ ✓ Compiled in 221ms (328 modules)

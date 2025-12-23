@@ -1,0 +1,13 @@
+
+> neurodata@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+  - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 2.2s
+ ○ Compiling /api/clinicas ...
+ ✓ Compiled /api/clinicas in 543ms (58 modules)
+ GET /api/clinicas 200 in 768ms

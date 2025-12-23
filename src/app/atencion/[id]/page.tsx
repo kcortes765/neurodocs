@@ -1,21 +1,16 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AttentionForm, AttentionFormData } from "@/components/forms";
 
 interface Paciente {
   id: string;
   nombreCompleto: string;
   rut: string;
   prevision: string;
-  isapreNombre?: string;
-  antecedentes?: string;
-  atenciones: Array<{
-    id: string;
-    fecha: string;
-    diagnostico: string;
-  }>;
+  fechaNac?: string | null;
+  antecedentes?: string | null;
 }
 
 interface Clinica {
@@ -23,299 +18,238 @@ interface Clinica {
   nombre: string;
 }
 
-const DOCUMENTOS = [
-  { id: "RECETA", label: "Receta medica" },
-  { id: "CERTIFICADO", label: "Certificado de atencion" },
-  { id: "LICENCIA", label: "Licencia medica" },
-  { id: "INTERCONSULTA", label: "Interconsulta" },
-  { id: "ORDEN", label: "Orden de examenes" },
-];
+const formatDate = (value?: string | null) => {
+  if (!value) return "Sin fecha";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Sin fecha";
+  return date.toLocaleDateString("es-CL");
+};
 
-export default function NuevaAtencion({ params }: { params: Promise<{ id: string }> }) {
-  const { id: pacienteId } = use(params);
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
+export default function AtencionPage({ params }: { params: { id: string } }) {
   const [paciente, setPaciente] = useState<Paciente | null>(null);
-  const [clinica, setClinica] = useState<Clinica | null>(null);
-
-  const [formData, setFormData] = useState({
-    diagnostico: "",
-    tratamiento: "",
-    indicaciones: "",
-  });
-
-  const [documentosSeleccionados, setDocumentosSeleccionados] = useState<string[]>(["RECETA"]);
+  const [clinicas, setClinicas] = useState<Clinica[]>([]);
+  const [clinicaActiva, setClinicaActiva] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [pdfBase64, setPdfBase64] = useState<string | null>(null);
 
   useEffect(() => {
-    const clinicaId = localStorage.getItem("clinicaActiva");
+    let active = true;
 
-    // Cargar paciente
-    fetch(`/api/pacientes/${pacienteId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.data) {
-          setPaciente(data.data);
-        } else {
-          setError("Paciente no encontrado");
+    const load = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const [pacienteRes, clinicasRes] = await Promise.all([
+          fetch(`/api/pacientes/${params.id}`),
+          fetch("/api/clinicas"),
+        ]);
+
+        const pacienteJson = await pacienteRes.json();
+        const clinicasJson = await clinicasRes.json();
+
+        if (!pacienteRes.ok) {
+          throw new Error(pacienteJson.error || "Error cargando paciente");
         }
-      })
-      .catch(() => setError("Error cargando paciente"))
-      .finally(() => setLoading(false));
+        if (!clinicasRes.ok) {
+          throw new Error(clinicasJson.error || "Error cargando clinicas");
+        }
 
-    // Cargar clinica
-    if (clinicaId) {
-      fetch("/api/clinicas")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.data) {
-            const c = data.data.find((cl: Clinica) => cl.id === clinicaId);
-            if (c) setClinica(c);
-          }
-        })
-        .catch(console.error);
-    }
-  }, [pacienteId]);
+        if (!active) return;
 
-  const toggleDocumento = (docId: string) => {
-    setDocumentosSeleccionados((prev) =>
-      prev.includes(docId)
-        ? prev.filter((d) => d !== docId)
-        : [...prev, docId]
-    );
-  };
+        setPaciente(pacienteJson.data);
+        setClinicas(clinicasJson.data || []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.diagnostico.trim()) {
-      setError("El diagnostico es requerido");
+        const saved = localStorage.getItem("clinicaActiva");
+        if (
+          saved &&
+          (clinicasJson.data || []).some((c: Clinica) => c.id === saved)
+        ) {
+          setClinicaActiva(saved);
+        } else if ((clinicasJson.data || []).length > 0) {
+          setClinicaActiva(clinicasJson.data[0].id);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err instanceof Error ? err.message : "Error cargando datos");
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [params.id]);
+
+  const handleSubmit = async (data: AttentionFormData) => {
+    if (!clinicaActiva) {
+      setError("Selecciona una clinica");
       return;
     }
-    if (!clinica) {
-      setError("Selecciona una clinica desde el dashboard");
-      return;
-    }
 
-    setSubmitting(true);
+    setSaving(true);
     setError("");
+    setMessage("");
+    setPdfBase64(null);
 
     try {
-      // 1. Crear atencion
-      const atencionRes = await fetch("/api/atenciones", {
+      const res = await fetch("/api/atenciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pacienteId,
-          clinicaId: clinica.id,
-          ...formData,
+          pacienteId: params.id,
+          clinicaId: clinicaActiva,
+          diagnostico: data.diagnostico,
+          tratamiento: data.tratamiento,
+          indicaciones: data.indicaciones,
         }),
       });
 
-      const atencionData = await atencionRes.json();
-      if (!atencionRes.ok) {
-        setError(atencionData.error || "Error creando atencion");
-        return;
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || "Error guardando atencion");
       }
 
-      // 2. Generar documentos
-      if (documentosSeleccionados.length > 0) {
-        const docRes = await fetch("/api/documentos/generar", {
+      const atencionId = json?.data?.id as string | undefined;
+      const tipos: string[] = [];
+
+      if (data.generateReceta) tipos.push("RECETA");
+      if (data.generateCertificado) tipos.push("CERTIFICADO");
+      if (data.generateOrdenExamen) tipos.push("ORDEN_EXAMEN");
+
+      let docsWarning = "";
+
+      if (tipos.length > 0 && atencionId) {
+        const docsRes = await fetch("/api/documentos/generar", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            atencionId: atencionData.data.id,
-            tipos: documentosSeleccionados,
-          }),
+          body: JSON.stringify({ atencionId, tipos }),
         });
 
-        const docData = await docRes.json();
-        if (docRes.ok && docData.pdf) {
-          // Descargar PDF
-          const link = document.createElement("a");
-          link.href = `data:application/pdf;base64,${docData.pdf}`;
-          link.download = `documentos_${paciente?.nombreCompleto.replace(/\s/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
-          link.click();
+        const docsJson = await docsRes.json();
+
+        if (!docsRes.ok) {
+          docsWarning = docsJson.error || "No se pudo generar el PDF";
+        } else if (docsJson.pdf) {
+          setPdfBase64(docsJson.pdf);
         }
       }
 
-      alert("Atencion guardada exitosamente");
-      router.push("/");
+      setMessage(
+        docsWarning ? `Atencion guardada, pero ${docsWarning}` : "Atencion guardada"
+      );
     } catch (err) {
-      setError("Error de conexion");
-      console.error(err);
+      setError(err instanceof Error ? err.message : "Error guardando atencion");
     } finally {
-      setSubmitting(false);
+      setSaving(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl text-gray-500">Cargando...</p>
-      </div>
-    );
-  }
-
-  if (!paciente) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-xl text-red-500 mb-4">{error || "Paciente no encontrado"}</p>
-          <Link href="/" className="text-blue-600 text-lg">
-            Volver al inicio
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const pdfUrl = pdfBase64 ? `data:application/pdf;base64,${pdfBase64}` : "";
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
           <Link href="/" className="text-2xl text-gray-400 hover:text-gray-600">
             &larr;
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Nueva Atencion</h1>
-            {clinica && (
-              <p className="text-gray-500">{clinica.nombre}</p>
-            )}
-          </div>
+          <h1 className="text-2xl font-bold text-gray-800">Nueva Atencion</h1>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Patient Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-800">{paciente.nombreCompleto}</h2>
-              <p className="text-lg text-gray-600">{paciente.rut}</p>
-              <p className="text-gray-600">
-                {paciente.prevision}
-                {paciente.isapreNombre && ` - ${paciente.isapreNombre}`}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-500">Atenciones previas</p>
-              <p className="text-2xl font-bold text-blue-600">{paciente.atenciones?.length || 0}</p>
-            </div>
+      <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+        {loading && (
+          <div className="bg-white rounded-xl shadow-sm border p-6 text-lg text-gray-500">
+            Cargando...
           </div>
-          {paciente.antecedentes && (
-            <div className="mt-4 pt-4 border-t border-blue-200">
-              <p className="text-sm font-medium text-gray-500">Antecedentes:</p>
-              <p className="text-gray-700">{paciente.antecedentes}</p>
-            </div>
-          )}
-        </div>
+        )}
 
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-lg">
+        {!loading && error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-lg">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border p-8">
-          {/* Diagnostico */}
-          <div className="mb-6">
-            <label className="block text-lg font-medium text-gray-700 mb-2">
-              Diagnostico *
-            </label>
-            <textarea
-              required
-              rows={3}
-              value={formData.diagnostico}
-              onChange={(e) => setFormData({ ...formData, diagnostico: e.target.value })}
-              className="w-full px-4 py-3 text-lg border-2 rounded-xl focus:border-blue-500 focus:outline-none resize-none"
-              placeholder="Hernia discal L4-L5 con compresion radicular..."
-            />
+        {!loading && message && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 text-lg">
+            {message}
           </div>
+        )}
 
-          {/* Tratamiento */}
-          <div className="mb-6">
-            <label className="block text-lg font-medium text-gray-700 mb-2">
-              Tratamiento
-            </label>
-            <textarea
-              rows={3}
-              value={formData.tratamiento}
-              onChange={(e) => setFormData({ ...formData, tratamiento: e.target.value })}
-              className="w-full px-4 py-3 text-lg border-2 rounded-xl focus:border-blue-500 focus:outline-none resize-none"
-              placeholder="Pregabalina 75mg c/12hrs, Paracetamol 1g c/8hrs..."
-            />
+        {!loading && paciente && (
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Paciente</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg">
+              <div>
+                <p className="text-gray-500">Nombre</p>
+                <p className="text-gray-900 font-medium">{paciente.nombreCompleto}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">RUT</p>
+                <p className="text-gray-900 font-medium">{paciente.rut}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Prevision</p>
+                <p className="text-gray-900 font-medium">{paciente.prevision}</p>
+              </div>
+              <div>
+                <p className="text-gray-500">Fecha Nacimiento</p>
+                <p className="text-gray-900 font-medium">{formatDate(paciente.fechaNac)}</p>
+              </div>
+            </div>
+            {paciente.antecedentes && (
+              <div className="mt-4">
+                <p className="text-gray-500">Antecedentes</p>
+                <p className="text-gray-900">{paciente.antecedentes}</p>
+              </div>
+            )}
           </div>
+        )}
 
-          {/* Indicaciones */}
-          <div className="mb-8">
-            <label className="block text-lg font-medium text-gray-700 mb-2">
-              Indicaciones
-            </label>
-            <textarea
-              rows={3}
-              value={formData.indicaciones}
-              onChange={(e) => setFormData({ ...formData, indicaciones: e.target.value })}
-              className="w-full px-4 py-3 text-lg border-2 rounded-xl focus:border-blue-500 focus:outline-none resize-none"
-              placeholder="Reposo relativo, evitar cargar peso, control en 2 semanas..."
-            />
+        {!loading && (
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Clinica</h2>
+            <select
+              value={clinicaActiva}
+              onChange={(e) => {
+                setClinicaActiva(e.target.value);
+                localStorage.setItem("clinicaActiva", e.target.value);
+              }}
+              className="w-full px-4 py-3 text-lg border-2 rounded-xl focus:border-blue-500 focus:outline-none bg-white"
+            >
+              <option value="">Seleccionar clinica...</option>
+              {clinicas.map((clinica) => (
+                <option key={clinica.id} value={clinica.id}>
+                  {clinica.nombre}
+                </option>
+              ))}
+            </select>
           </div>
+        )}
 
-          {/* Documentos */}
-          <div className="mb-8">
-            <label className="block text-lg font-medium text-gray-700 mb-4">
-              Documentos a generar
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              {DOCUMENTOS.map((doc) => (
-                <label
-                  key={doc.id}
-                  className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
-                    documentosSeleccionados.includes(doc.id)
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
+        {!loading && paciente && (
+          <div className="bg-white rounded-xl shadow-sm border p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Atencion</h2>
+            <AttentionForm onSubmit={handleSubmit} loading={saving} />
+            {pdfBase64 && (
+              <div className="mt-6">
+                <a
+                  href={pdfUrl}
+                  download={`documento-${paciente.rut}.pdf`}
+                  className="inline-block px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
                 >
-                  <input
-                    type="checkbox"
-                    checked={documentosSeleccionados.includes(doc.id)}
-                    onChange={() => toggleDocumento(doc.id)}
-                    className="w-5 h-5"
-                  />
-                  <span className="text-lg">{doc.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full px-6 py-5 text-xl font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50"
-          >
-            {submitting ? "GENERANDO..." : "GENERAR DOCUMENTOS"}
-          </button>
-        </form>
-
-        {/* Historial */}
-        {paciente.atenciones && paciente.atenciones.length > 0 && (
-          <div className="mt-8 bg-white rounded-xl shadow-sm border">
-            <div className="px-6 py-4 border-b">
-              <h3 className="text-lg font-semibold text-gray-700">Historial de atenciones</h3>
-            </div>
-            <div className="divide-y">
-              {paciente.atenciones.slice(0, 5).map((atencion) => (
-                <div key={atencion.id} className="px-6 py-4">
-                  <p className="text-sm text-gray-500">
-                    {new Date(atencion.fecha).toLocaleDateString("es-CL")}
-                  </p>
-                  <p className="text-gray-700">{atencion.diagnostico}</p>
-                </div>
-              ))}
-            </div>
+                  Descargar PDF
+                </a>
+              </div>
+            )}
           </div>
         )}
       </main>

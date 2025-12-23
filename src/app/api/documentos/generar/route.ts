@@ -2,6 +2,23 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createSamplePdf, pdfToBase64 } from '@/lib/pdf-generator'
 
+// GET: Lista plantillas disponibles
+export async function GET() {
+  try {
+    const plantillas = await prisma.plantilla.findMany({
+      orderBy: { nombre: 'asc' },
+    })
+
+    return NextResponse.json({ data: plantillas })
+  } catch (error) {
+    console.error('Error listando plantillas:', error)
+    return NextResponse.json(
+      { error: 'Error listando plantillas' },
+      { status: 500 }
+    )
+  }
+}
+
 // POST: Genera PDFs
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +47,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generar PDF de ejemplo
     const pdfBytes = await createSamplePdf()
     const pdfBase64 = pdfToBase64(pdfBytes)
 
@@ -40,7 +56,6 @@ export async function POST(request: NextRequest) {
       fecha: atencion.fecha.toISOString(),
       tipos: tipos || ['RECETA'],
     })
-
   } catch (error) {
     console.error('Error generando PDF:', error)
     return NextResponse.json(

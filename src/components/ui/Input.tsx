@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label: string;
@@ -40,12 +40,6 @@ export const Input: React.FC<InputProps> = ({
 }) => {
   const [internalValue, setInternalValue] = useState('');
   const value = controlledValue !== undefined ? String(controlledValue) : internalValue;
-
-  useEffect(() => {
-    if (controlledValue !== undefined && variant === 'rut') {
-      setInternalValue(formatRut(String(controlledValue)));
-    }
-  }, [controlledValue, variant]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;

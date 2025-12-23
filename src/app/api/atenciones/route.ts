@@ -1,6 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
+// GET: Lista atenciones con filtros opcionales
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams
+    const pacienteId = searchParams.get('pacienteId')
+    const clinicaId = searchParams.get('clinicaId')
+
+    const where: { pacienteId?: string; clinicaId?: string } = {}
+
+    if (pacienteId) where.pacienteId = pacienteId
+    if (clinicaId) where.clinicaId = clinicaId
+
+    const atenciones = await prisma.atencion.findMany({
+      where: Object.keys(where).length ? where : undefined,
+      orderBy: { fecha: 'desc' },
+      include: {
+        paciente: true,
+        clinica: true,
+      },
+    })
+
+    return NextResponse.json({ data: atenciones })
+  } catch (error) {
+    console.error('Error al obtener atenciones:', error)
+    return NextResponse.json(
+      { error: 'Error al obtener atenciones' },
+      { status: 500 }
+    )
+  }
+}
+
 // POST: Crea nueva atencion
 export async function POST(request: NextRequest) {
   try {

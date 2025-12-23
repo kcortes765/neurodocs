@@ -22,7 +22,7 @@ interface Patient {
 
 export const PatientListExample: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [patients, setPatients] = useState<Patient[]>([
+  const patients: Patient[] = [
     {
       id: '1',
       nombre: 'Juan Pérez González',
@@ -37,7 +37,7 @@ export const PatientListExample: React.FC = () => {
       fechaNacimiento: '1948-11-20',
       prevision: 'ISAPRE',
     },
-  ]);
+  ];
 
   const filteredPatients = patients.filter(
     (patient) =>

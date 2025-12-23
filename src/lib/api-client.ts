@@ -1,13 +1,5 @@
-/**
- * Cliente API para uso en componentes del cliente
- * Proporciona funciones tipo-seguras para interactuar con la API
- */
-
 const API_BASE = '/api'
 
-/**
- * Función genérica para hacer peticiones a la API
- */
 async function fetchAPI<T>(
   endpoint: string,
   options?: RequestInit
@@ -28,41 +20,31 @@ async function fetchAPI<T>(
     }
 
     return json
-  } catch (error) {
-    return { error: 'Error de conexión' }
+  } catch {
+    return { error: 'Error de conexion' }
   }
 }
 
-// ==================== PACIENTES ====================
-
 export const pacientes = {
-  /**
-   * Lista todos los pacientes
-   * @param query - Búsqueda opcional por nombre, apellido o RUT
-   */
-  listar: async (query?: string) => {
-    const queryParam = query ? `?q=${encodeURIComponent(query)}` : ''
-    return fetchAPI(`/pacientes${queryParam}`)
+  listar: async (query?: string, limit?: number) => {
+    const params = new URLSearchParams()
+    if (query) params.append('q', query)
+    if (limit) params.append('limit', String(limit))
+    const queryString = params.toString()
+    return fetchAPI(`/pacientes${queryString ? `?${queryString}` : ''}`)
   },
 
-  /**
-   * Obtiene un paciente por ID
-   */
   obtener: async (id: string) => {
     return fetchAPI(`/pacientes/${id}`)
   },
 
-  /**
-   * Crea un nuevo paciente
-   */
   crear: async (data: {
     rut: string
-    nombre: string
-    apellido: string
-    fechaNacimiento?: string
-    telefono?: string
-    email?: string
-    direccion?: string
+    nombreCompleto: string
+    fechaNac?: string
+    prevision?: string
+    isapreNombre?: string
+    antecedentes?: string
   }) => {
     return fetchAPI('/pacientes', {
       method: 'POST',
@@ -70,19 +52,14 @@ export const pacientes = {
     })
   },
 
-  /**
-   * Actualiza un paciente
-   */
   actualizar: async (
     id: string,
     data: {
-      rut?: string
-      nombre?: string
-      apellido?: string
-      fechaNacimiento?: string
-      telefono?: string
-      email?: string
-      direccion?: string
+      nombreCompleto?: string
+      fechaNac?: string
+      prevision?: string
+      isapreNombre?: string
+      antecedentes?: string
     }
   ) => {
     return fetchAPI(`/pacientes/${id}`, {
@@ -90,35 +67,17 @@ export const pacientes = {
       body: JSON.stringify(data),
     })
   },
-
-  /**
-   * Elimina un paciente
-   */
-  eliminar: async (id: string) => {
-    return fetchAPI(`/pacientes/${id}`, {
-      method: 'DELETE',
-    })
-  },
 }
 
-// ==================== CLÍNICAS ====================
-
 export const clinicas = {
-  /**
-   * Lista todas las clínicas
-   */
   listar: async () => {
     return fetchAPI('/clinicas')
   },
 
-  /**
-   * Crea una nueva clínica
-   */
   crear: async (data: {
     nombre: string
-    direccion?: string
-    telefono?: string
-    email?: string
+    direccion: string
+    logoUrl?: string
   }) => {
     return fetchAPI('/clinicas', {
       method: 'POST',
@@ -127,12 +86,7 @@ export const clinicas = {
   },
 }
 
-// ==================== ATENCIONES ====================
-
 export const atenciones = {
-  /**
-   * Lista atenciones con filtros opcionales
-   */
   listar: async (filtros?: { pacienteId?: string; clinicaId?: string }) => {
     const params = new URLSearchParams()
     if (filtros?.pacienteId) params.append('pacienteId', filtros.pacienteId)
@@ -141,24 +95,16 @@ export const atenciones = {
     return fetchAPI(`/atenciones${queryString}`)
   },
 
-  /**
-   * Obtiene una atención por ID
-   */
   obtener: async (id: string) => {
     return fetchAPI(`/atenciones/${id}`)
   },
 
-  /**
-   * Crea una nueva atención
-   */
   crear: async (data: {
     pacienteId: string
     clinicaId: string
-    fecha?: string
-    motivoConsulta?: string
-    diagnostico?: string
+    diagnostico: string
     tratamiento?: string
-    observaciones?: string
+    indicaciones?: string
   }) => {
     return fetchAPI('/atenciones', {
       method: 'POST',
@@ -166,17 +112,13 @@ export const atenciones = {
     })
   },
 
-  /**
-   * Actualiza una atención
-   */
   actualizar: async (
     id: string,
     data: {
       fecha?: string
-      motivoConsulta?: string
       diagnostico?: string
       tratamiento?: string
-      observaciones?: string
+      indicaciones?: string
     }
   ) => {
     return fetchAPI(`/atenciones/${id}`, {
@@ -185,9 +127,6 @@ export const atenciones = {
     })
   },
 
-  /**
-   * Elimina una atención
-   */
   eliminar: async (id: string) => {
     return fetchAPI(`/atenciones/${id}`, {
       method: 'DELETE',
@@ -195,20 +134,12 @@ export const atenciones = {
   },
 }
 
-// ==================== DOCUMENTOS ====================
-
 export const documentos = {
-  /**
-   * Lista las plantillas disponibles
-   */
   listarPlantillas: async () => {
     return fetchAPI('/documentos/generar')
   },
 
-  /**
-   * Genera documentos PDF
-   */
-  generar: async (data: { atencionId: string; plantillasIds: string[] }) => {
+  generar: async (data: { atencionId: string; tipos?: string[] }) => {
     return fetchAPI('/documentos/generar', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -216,12 +147,7 @@ export const documentos = {
   },
 }
 
-// ==================== SEED (Desarrollo) ====================
-
 export const seed = {
-  /**
-   * Genera datos sintéticos
-   */
   generar: async (data: { pacientes: number; atencionesPorPaciente: number }) => {
     return fetchAPI('/seed', {
       method: 'POST',
@@ -229,9 +155,6 @@ export const seed = {
     })
   },
 
-  /**
-   * Limpia todos los datos
-   */
   limpiar: async () => {
     return fetchAPI('/seed', {
       method: 'DELETE',
@@ -239,11 +162,12 @@ export const seed = {
   },
 }
 
-// Exportación por defecto con todas las funciones
-export default {
+const apiClient = {
   pacientes,
   clinicas,
   atenciones,
   documentos,
   seed,
 }
+
+export default apiClient

@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NeuroDoc Automator
 
-## Getting Started
+Aplicacion Next.js para registro de pacientes, atenciones y generacion de PDFs (mock).
 
-First, run the development server:
+## Requisitos
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 18+ (recomendado 20)
+- npm
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Arranque rapido (desde cero)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. npm install
+2. npm run setup
+3. npm run dev
+4. abrir http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Bootstrap (todo en uno)
 
-## Learn More
+npm run bootstrap
 
-To learn more about Next.js, take a look at the following resources:
+## Base de datos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- SQLite via Prisma
+- DATABASE_URL en .env (si no existe, copiar .env.example)
+- Para inicializar: npm run db:push
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Datos de prueba
 
-## Deploy on Vercel
+- En la pantalla principal: "Generar datos de prueba"
+- O via API: POST /api/seed con {"pacientes": 20, "atencionesPorPaciente": 2}
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Automatizacion de deteccion y correccion
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- npm run check (lint + typecheck + prisma validate)
+- npm run fix (eslint --fix + prisma format)
+
+## Otros comandos
+
+- npm run lint
+- npm run typecheck
+- npm run build
+- npm run start
+
+## CI
+
+GitHub Actions ejecuta npm run check en cada push y PR.

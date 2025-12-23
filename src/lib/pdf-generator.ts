@@ -13,6 +13,17 @@ export interface FieldMapping {
   maxWidth?: number;  // para wrap de texto largo
 }
 
+export interface CheckboxMapping {
+  [field: string]:
+    | { x: number; y: number }
+    | Record<string, { x: number; y: number }>;
+}
+
+export interface TemplateMapping {
+  text?: FieldMapping[];
+  checkboxes?: CheckboxMapping;
+}
+
 export interface PatientData {
   nombreCompleto: string;
   rut: string;
@@ -36,11 +47,32 @@ export interface AttentionData {
  */
 export async function loadPdfTemplate(templatePath: string): Promise<PDFDocument> {
   try {
-    // Construir ruta completa al template
-    const fullPath = path.join(process.cwd(), 'public', 'plantillas', templatePath);
+    const candidates: string[] = [];
+    const primaryPath = path.join(process.cwd(), 'public', 'plantillas', templatePath);
+    candidates.push(primaryPath);
 
-    // Verificar que el archivo existe
-    await fs.access(fullPath);
+    if (process.env.TEMPLATES_DIR) {
+      candidates.push(path.join(process.env.TEMPLATES_DIR, templatePath));
+    }
+
+    const fallbackPath = path.resolve(process.cwd(), '..', 'plantillas', templatePath);
+    candidates.push(fallbackPath);
+
+    let fullPath: string | null = null;
+
+    for (const candidate of candidates) {
+      try {
+        await fs.access(candidate);
+        fullPath = candidate;
+        break;
+      } catch {
+        // seguir buscando
+      }
+    }
+
+    if (!fullPath) {
+      throw new Error(`Template no encontrado. Rutas: ${candidates.join(', ')}`);
+    }
 
     // Leer el archivo
     const templateBytes = await fs.readFile(fullPath);
@@ -77,11 +109,9 @@ export async function injectText(
     }
 
     const firstPage = pages[0];
-    const { height } = firstPage.getSize();
 
     // Cargar fuente estándar
     const font = await pdf.embedFont(StandardFonts.Helvetica);
-    const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
     // Procesar cada mapping
     for (const mapping of mappings) {
@@ -155,6 +185,105 @@ export async function injectText(
     }
     throw new Error('Error desconocido inyectando texto en PDF');
   }
+}
+
+/**
+ * Inyecta checkboxes en coordenadas X,Y
+ * @param pdf - Documento PDF donde inyectar
+ * @param mappings - Mapeo de campos a coordenadas
+ * @param data - Datos booleanos o valores seleccionados
+ * @returns PDFDocument modificado
+ */
+export async function injectCheckboxes(
+  pdf: PDFDocument,
+  mappings: CheckboxMapping,
+  data: Record<string, string | boolean>
+): Promise<PDFDocument> {
+  try {
+    const pages = pdf.getPages();
+    if (pages.length === 0) {
+      throw new Error('El PDF no tiene paginas');
+    }
+
+    const firstPage = pages[0];
+    const font = await pdf.embedFont(StandardFonts.HelveticaBold);
+
+    const normalizeKey = (value: string) => value.trim().toLowerCase();
+
+    for (const [field, mapping] of Object.entries(mappings)) {
+      const value = data[field];
+      if (value === undefined || value === null || value === '') {
+        continue;
+      }
+
+      if ('x' in mapping && 'y' in mapping) {
+        if (value === true || value === 'true' || value === 'si') {
+          firstPage.drawText('X', {
+            x: mapping.x,
+            y: mapping.y,
+            size: 12,
+            font,
+            color: rgb(0, 0, 0),
+          });
+        }
+        continue;
+      }
+
+      const options = mapping as Record<string, { x: number; y: number }>;
+      let key: string | undefined;
+
+      if (typeof value === 'boolean') {
+        key = value ? 'si' : 'no';
+        if (!options[key]) {
+          key = value ? 'true' : 'false';
+        }
+      } else {
+        const normalized = normalizeKey(String(value));
+        key = Object.keys(options).find(
+          (option) => normalizeKey(option) === normalized
+        );
+      }
+
+      if (!key || !options[key]) {
+        continue;
+      }
+
+      const { x, y } = options[key];
+      firstPage.drawText('X', {
+        x,
+        y,
+        size: 12,
+        font,
+        color: rgb(0, 0, 0),
+      });
+    }
+
+    return pdf;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Error inyectando checkboxes en PDF: ${error.message}`);
+    }
+    throw new Error('Error desconocido inyectando checkboxes en PDF');
+  }
+}
+
+/**
+ * Genera un documento PDF usando un mapeo combinado
+ */
+export async function generateDocumentFromMapping(
+  templatePath: string,
+  mapping: TemplateMapping,
+  textData: Record<string, string>,
+  checkboxData: Record<string, string | boolean> = {}
+): Promise<Uint8Array> {
+  const pdfDoc = await loadPdfTemplate(templatePath);
+  if (mapping.text && mapping.text.length > 0) {
+    await injectText(pdfDoc, mapping.text, textData);
+  }
+  if (mapping.checkboxes && Object.keys(mapping.checkboxes).length > 0) {
+    await injectCheckboxes(pdfDoc, mapping.checkboxes, checkboxData);
+  }
+  return pdfDoc.save();
 }
 
 /**

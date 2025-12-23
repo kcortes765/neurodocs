@@ -4,9 +4,22 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:doctor": "node scripts/doctor.mjs && next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate",
+    "prisma:format": "prisma format",
+    "db:push": "prisma db push",
+    "setup": "npm run prisma:generate && npm run db:push",
+    "check": "npm run lint && npm run typecheck && npm run prisma:validate",
+    "fix": "npm run lint:fix && npm run prisma:format",
+    "doctor": "node scripts/doctor.mjs",
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

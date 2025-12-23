@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
     if (clinicas.length === 0) {
       await prisma.clinica.createMany({
         data: [
-          { nombre: 'Clinica Alemana', direccion: 'Av. Vitacura 5951, Vitacura' },
-          { nombre: 'Clinica Las Condes', direccion: 'Estoril 450, Las Condes' },
-          { nombre: 'Hospital Clinico UC', direccion: 'Marcoleta 350, Santiago Centro' },
-        ]
+          { nombre: 'Clinica Antofagasta', direccion: 'Av. Angamos 900, Antofagasta' },
+          { nombre: 'Hospital Regional Dr. Leonardo Guzman', direccion: 'Av. Argentina 1962, Antofagasta' },
+          { nombre: 'Centro Medico Costa Norte', direccion: 'Av. Edmundo Perez Zujovic 4300, Antofagasta' },
+        ],
       })
       clinicas = await prisma.clinica.findMany()
     }

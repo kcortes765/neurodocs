@@ -12,13 +12,11 @@ export interface AttentionFormData {
 
 export interface AttentionFormProps {
   onSubmit: (data: AttentionFormData) => void | Promise<void>;
-  patientId: string;
   loading?: boolean;
 }
 
 export const AttentionForm: React.FC<AttentionFormProps> = ({
   onSubmit,
-  patientId,
   loading = false,
 }) => {
   const [formData, setFormData] = useState<AttentionFormData>({

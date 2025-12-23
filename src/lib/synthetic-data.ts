@@ -291,7 +291,7 @@ export function generateBatch(count: number) {
  */
 export function generateCompleteDataset(patientCount: number, attentionsPerPatient: number = 3) {
   const patients = generateBatch(patientCount);
-  const attentions = [];
+  const attentions: Array<ReturnType<typeof generateAttention>> = [];
 
   // Generar ID de clínica ficticio
   const clinicId = `CLI-${Math.floor(Math.random() * 1000)}`;

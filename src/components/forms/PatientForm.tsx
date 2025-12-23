@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Input, Select, Button, SelectOption } from '../ui';
 
 export interface PatientFormData {
@@ -65,19 +65,6 @@ export const PatientForm: React.FC<PatientFormProps> = ({
 
   const [errors, setErrors] = useState<Partial<Record<keyof PatientFormData, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<keyof PatientFormData, boolean>>>({});
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        nombre: initialData.nombre || '',
-        rut: initialData.rut || '',
-        fechaNacimiento: initialData.fechaNacimiento || '',
-        prevision: initialData.prevision || '',
-        isapreNombre: initialData.isapreNombre || '',
-        antecedentes: initialData.antecedentes || '',
-      });
-    }
-  }, [initialData]);
 
   const validateField = (name: keyof PatientFormData, value: string): string => {
     switch (name) {

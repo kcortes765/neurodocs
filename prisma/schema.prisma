@@ -16,6 +16,7 @@ model Clinica {
   createdAt  DateTime    @default(now())
   atenciones Atencion[]
   plantillas Plantilla[]
+  eventosQuirurgicos EventoQuirurgico[]
 }
 
 model Paciente {
@@ -28,6 +29,7 @@ model Paciente {
   antecedentes   String?
   createdAt      DateTime   @default(now())
   atenciones     Atencion[]
+  eventosQuirurgicos EventoQuirurgico[]
 }
 
 model Atencion {
@@ -53,22 +55,90 @@ model Plantilla {
   tipo        String
   pdfUrl      String
   mapeoCampos String
+  activa      Boolean     @default(true)
+  previsionNombre String?
   clinicaId   String?
   clinica     Clinica?    @relation(fields: [clinicaId], references: [id])
   documentos  Documento[]
 
   @@index([clinicaId])
+  @@index([tipo])
+  @@index([previsionNombre])
 }
 
 model Documento {
   id             String    @id @default(cuid())
-  atencionId     String
+  atencionId     String?
+  eventoQuirurgicoId String?
   plantillaId    String
   pdfGeneradoUrl String?
   createdAt      DateTime  @default(now())
-  atencion       Atencion  @relation(fields: [atencionId], references: [id])
+  atencion       Atencion?  @relation(fields: [atencionId], references: [id])
+  eventoQuirurgico EventoQuirurgico? @relation(fields: [eventoQuirurgicoId], references: [id])
   plantilla      Plantilla @relation(fields: [plantillaId], references: [id])
 
   @@index([atencionId])
+  @@index([eventoQuirurgicoId])
   @@index([plantillaId])
+}
+
+model EquipoMedico {
+  id        String   @id @default(cuid())
+  nombre    String
+  rut       String
+  rol       String
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  eventosComoCirujano   EventoQuirurgico[] @relation("EventoCirujano")
+  eventosComoAnestesista EventoQuirurgico[] @relation("EventoAnestesista")
+  eventosComoArsenalera  EventoQuirurgico[] @relation("EventoArsenalera")
+  eventosComoAyudante1   EventoQuirurgico[] @relation("EventoAyudante1")
+  eventosComoAyudante2   EventoQuirurgico[] @relation("EventoAyudante2")
+
+  @@index([rol])
+}
+
+model Procedimiento {
+  id          String   @id @default(cuid())
+  codigoFonasa String
+  descripcion String
+  tipo        String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  eventos     EventoQuirurgico[]
+
+  @@index([codigoFonasa])
+}
+
+model EventoQuirurgico {
+  id                String   @id @default(cuid())
+  pacienteId        String
+  clinicaId         String
+  fechaCirugia      DateTime
+  diagnostico       String
+  codigoCie10       String?
+  procedimientoId   String?
+  lateralidad       String?
+  alergiaLatex      Boolean  @default(false)
+  requiereBiopsia   Boolean  @default(false)
+  requiereRayos     Boolean  @default(false)
+  cirujanoId        String?
+  anestesistaId     String?
+  arsenaleraId      String?
+  ayudante1Id       String?
+  ayudante2Id       String?
+  riesgosDescripcion String?
+  createdAt         DateTime @default(now())
+  paciente          Paciente @relation(fields: [pacienteId], references: [id])
+  clinica           Clinica  @relation(fields: [clinicaId], references: [id])
+  procedimiento     Procedimiento? @relation(fields: [procedimientoId], references: [id])
+  cirujano          EquipoMedico? @relation("EventoCirujano", fields: [cirujanoId], references: [id])
+  anestesista       EquipoMedico? @relation("EventoAnestesista", fields: [anestesistaId], references: [id])
+  arsenalera        EquipoMedico? @relation("EventoArsenalera", fields: [arsenaleraId], references: [id])
+  ayudante1         EquipoMedico? @relation("EventoAyudante1", fields: [ayudante1Id], references: [id])
+  ayudante2         EquipoMedico? @relation("EventoAyudante2", fields: [ayudante2Id], references: [id])
+  documentos        Documento[]
+
+  @@index([pacienteId])
+  @@index([clinicaId])
 }

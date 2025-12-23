@@ -135,7 +135,7 @@ export default function ListaEventosQuirurgicos() {
               {eventosFiltrados.map((evento) => (
                 <Link
                   key={evento.id}
-                  href={`/eventos-quirurgicos/${evento.id}`}
+                  href={`/pacientes/${evento.paciente.id}`}
                   className="block px-6 py-4 hover:bg-gray-50"
                 >
                   <div className="flex items-start justify-between">

@@ -108,9 +108,7 @@ export const SurgicalEventForm: React.FC<SurgicalEventFormProps> = ({
     if (!formData.diagnostico.trim()) {
       nextErrors.diagnostico = 'El diagnostico es obligatorio'
     }
-    if (formData.generarConsentimiento && !formData.riesgosDescripcion.trim()) {
-      nextErrors.riesgosDescripcion = 'Describe riesgos y complicaciones'
-    }
+    // riesgosDescripcion es opcional
 
     setErrors(nextErrors)
     return Object.keys(nextErrors).length === 0

@@ -236,33 +236,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Seed Data (solo desarrollo) */}
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <button
-            onClick={async () => {
-              if (confirm("Generar 20 pacientes de prueba con atenciones y cirugias?")) {
-                setLoading(true);
-                try {
-                  await fetch("/api/seed", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ pacientes: 20, atencionesPorPaciente: 2 }),
-                  });
-                  window.location.reload();
-                } catch (error) {
-                  console.error(error);
-                  alert("Error generando datos");
-                } finally {
-                  setLoading(false);
-                }
-              }
-            }}
-            disabled={loading}
-            className="w-full px-6 py-4 text-lg font-medium text-center text-gray-500 bg-gray-50 border border-dashed border-gray-300 rounded-xl hover:bg-gray-100 hover:text-gray-700 disabled:opacity-50 transition-colors"
-          >
-            {loading ? "Generando..." : "🧪 Generar datos de prueba"}
-          </button>
-        </div>
       </main>
     </div>
   );

@@ -243,10 +243,19 @@ export async function POST(request: NextRequest) {
     const pdfBase64 = pdfToBase64(pdfBytes)
 
     return NextResponse.json({
-      pdf: pdfBase64,
-      paciente: atencion.paciente.nombreCompleto,
-      fecha: atencion.fecha.toISOString(),
-      plantilla: 'Documento Genérico',
+      data: {
+        atencionId: atencion.id,
+        paciente: {
+          nombreCompleto: atencion.paciente.nombreCompleto,
+          rut: atencion.paciente.rut,
+        },
+        documentos: [{
+          tipo: 'ATENCIÓN MÉDICA',
+          plantillaId: null,
+          plantillaNombre: 'Documento Genérico',
+          pdf: pdfBase64,
+        }],
+      },
     })
   } catch (error) {
     console.error('Error generando PDF:', error)

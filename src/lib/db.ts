@@ -5,14 +5,25 @@ import { createClient } from '@libsql/client'
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
 function createPrismaClient(): PrismaClient {
-  // En producción (Vercel) usa Turso
-  const url = process.env.DATABASE_URL || ''
+  const databaseUrl = process.env.DATABASE_URL || ''
 
-  if (url.startsWith('libsql://') || url.startsWith('https://')) {
-    // Extraer URL y token
-    const urlObj = new URL(url)
-    const authToken = urlObj.searchParams.get('authToken') || ''
-    const baseUrl = `${urlObj.protocol}//${urlObj.host}`
+  // Si es URL de Turso (libsql://)
+  if (databaseUrl.includes('turso.io') || databaseUrl.startsWith('libsql://')) {
+    // Extraer URL base y token
+    const [baseUrl, queryString] = databaseUrl.split('?')
+    let authToken = ''
+
+    if (queryString) {
+      const params = queryString.split('&')
+      for (const param of params) {
+        if (param.startsWith('authToken=')) {
+          authToken = param.substring(10)
+          break
+        }
+      }
+    }
+
+    console.log('[DB] Usando Turso:', baseUrl)
 
     const libsql = createClient({
       url: baseUrl,
@@ -23,7 +34,8 @@ function createPrismaClient(): PrismaClient {
     return new PrismaClient({ adapter } as any)
   }
 
-  // En desarrollo usa SQLite local
+  // SQLite local
+  console.log('[DB] Usando SQLite local')
   return new PrismaClient()
 }
 

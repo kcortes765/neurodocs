@@ -51,17 +51,15 @@ export default function LoginPage() {
       <div className="w-full max-w-[90%] sm:max-w-md lg:max-w-lg">
         {/* Logo */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white rounded-2xl mx-auto mb-3 sm:mb-4 flex items-center justify-center shadow-lg overflow-hidden p-2">
+          <div className="bg-white rounded-2xl mx-auto mb-3 sm:mb-4 flex items-center justify-center shadow-lg overflow-hidden p-3 sm:p-4 max-w-[280px] sm:max-w-[320px]">
             <Image
-              src="/logo.png"
-              alt="NeuroMedic"
-              width={96}
-              height={96}
-              className="object-contain"
+              src="/logo.jpg"
+              alt="NeuroMedic Neurocirujanos"
+              width={300}
+              height={80}
+              className="object-contain w-full h-auto"
             />
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">NeuroMedic</h1>
-          <p className="text-blue-200 mt-1 sm:mt-2 text-sm sm:text-base lg:text-lg">Neurocirujanos</p>
         </div>
 
         {/* Login Form */}

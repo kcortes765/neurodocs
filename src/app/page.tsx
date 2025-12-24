@@ -106,19 +106,15 @@ export default function Dashboard() {
         <div className="max-w-5xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
           {/* Top bar */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+            <div className="flex items-center">
+              <div className="h-12 sm:h-14 bg-white rounded-lg flex items-center justify-center overflow-hidden px-2">
                 <Image
-                  src="/logo.png"
-                  alt="NeuroMedic"
-                  width={48}
-                  height={48}
-                  className="object-contain"
+                  src="/logo.jpg"
+                  alt="NeuroMedic Neurocirujanos"
+                  width={180}
+                  height={50}
+                  className="object-contain h-10 sm:h-12 w-auto"
                 />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">NeuroMedic</h1>
-                <p className="text-blue-200 text-xs sm:text-sm hidden sm:block">Neurocirujanos</p>
               </div>
             </div>
 

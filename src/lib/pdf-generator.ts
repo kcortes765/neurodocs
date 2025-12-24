@@ -3,6 +3,20 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 /**
+ * Carga el logo de la aplicación para incrustar en PDFs
+ */
+async function loadLogo(): Promise<Uint8Array | null> {
+  const logoPath = path.join(process.cwd(), 'public', 'logo.jpg');
+  try {
+    const logoBytes = await fs.readFile(logoPath);
+    return logoBytes;
+  } catch {
+    console.warn('Logo no encontrado en:', logoPath);
+    return null;
+  }
+}
+
+/**
  * Types para el generador de PDFs
  */
 export interface FieldMapping {
@@ -385,7 +399,7 @@ export async function createSamplePdf(): Promise<Uint8Array> {
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
     // Título
-    page.drawText('PDF de Ejemplo - NeoroData', {
+    page.drawText('PDF de Ejemplo - NeuroMedic', {
       x: 50,
       y: height - 50,
       size: 20,
@@ -486,7 +500,7 @@ export async function createSamplePdf(): Promise<Uint8Array> {
     }
 
     // Footer
-    page.drawText('Generado por NeoroData PDF Engine', {
+    page.drawText('Generado por NeuroMedic', {
       x: 50,
       y: 30,
       size: 8,
@@ -523,6 +537,25 @@ export async function createGenericDocument(
     const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
     let y = height - 50;
+
+    // Logo en la parte superior
+    const logoBytes = await loadLogo();
+    if (logoBytes) {
+      try {
+        const logoImage = await pdfDoc.embedJpg(logoBytes);
+        const logoWidth = 150;
+        const logoHeight = (logoImage.height / logoImage.width) * logoWidth;
+        page.drawImage(logoImage, {
+          x: (width - logoWidth) / 2,
+          y: height - logoHeight - 30,
+          width: logoWidth,
+          height: logoHeight,
+        });
+        y = height - logoHeight - 50;
+      } catch {
+        console.warn('Error incrustando logo en PDF');
+      }
+    }
 
     // Encabezado
     page.drawText('DOCUMENTO MÉDICO', {
@@ -698,7 +731,7 @@ export async function createGenericDocument(
     page.drawText(`Generado: ${data.fechaActual || new Date().toLocaleDateString('es-CL')}`, {
       x: 50, y: 40, size: 9, font: fontRegular, color: rgb(0.5, 0.5, 0.5),
     });
-    page.drawText('NeuroDoc - Sistema de Documentación Médica', {
+    page.drawText('NeuroMedic - Neurocirujanos', {
       x: 50, y: 25, size: 9, font: fontRegular, color: rgb(0.5, 0.5, 0.5),
     });
 

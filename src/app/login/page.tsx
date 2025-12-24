@@ -49,23 +49,21 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-blue-600 to-blue-800 flex items-center justify-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-[90%] sm:max-w-md lg:max-w-lg">
-        {/* Logo */}
-        <div className="text-center mb-4 sm:mb-6">
-          <div className="bg-white rounded-xl mx-auto flex items-center justify-center shadow-lg overflow-hidden px-3 py-2 w-fit">
+        {/* Login Form con Logo integrado */}
+        <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-8 lg:p-10">
+          {/* Logo */}
+          <div className="flex justify-center mb-4 sm:mb-6">
             <Image
               src="/logo.jpg"
               alt="NeuroMedic Neurocirujanos"
-              width={200}
-              height={55}
-              className="object-contain h-12 sm:h-14 w-auto"
+              width={240}
+              height={65}
+              className="object-contain h-16 sm:h-20 w-auto"
             />
           </div>
-        </div>
 
-        {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-8 lg:p-10">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-800 text-center mb-5 sm:mb-6 lg:mb-8">
-            Iniciar Sesion
+            Iniciar Sesión
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">

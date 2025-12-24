@@ -11,12 +11,17 @@ export interface FieldMapping {
   y: number;          // coordenada Y
   fontSize?: number;  // default 12
   maxWidth?: number;  // para wrap de texto largo
+  page?: number;      // número de página (0-indexed), default 0
+}
+
+export interface CheckboxCoordinate {
+  x: number;
+  y: number;
+  page?: number;
 }
 
 export interface CheckboxMapping {
-  [field: string]:
-    | { x: number; y: number }
-    | Record<string, { x: number; y: number }>;
+  [field: string]: CheckboxCoordinate | Record<string, CheckboxCoordinate>;
 }
 
 export interface TemplateMapping {
@@ -102,13 +107,11 @@ export async function injectText(
   data: Record<string, string>
 ): Promise<PDFDocument> {
   try {
-    // Obtener la primera página (se puede extender para múltiples páginas)
+    // Obtener todas las páginas
     const pages = pdf.getPages();
     if (pages.length === 0) {
       throw new Error('El PDF no tiene páginas');
     }
-
-    const firstPage = pages[0];
 
     // Cargar fuente estándar
     const font = await pdf.embedFont(StandardFonts.Helvetica);
@@ -124,9 +127,17 @@ export async function injectText(
 
       const fontSize = mapping.fontSize || 12;
       const maxWidth = mapping.maxWidth;
+      const pageIndex = mapping.page || 0;
+
+      // Validar que la página existe
+      if (pageIndex >= pages.length) {
+        console.warn(`Página ${pageIndex} no existe para campo ${mapping.field}. PDF tiene ${pages.length} páginas.`);
+        continue;
+      }
+
+      const targetPage = pages[pageIndex];
 
       // Convertir coordenada Y (PDF usa origen inferior izquierdo)
-      // Si Y viene del "top", convertir: Y_pdf = height - Y_input
       const yPosition = mapping.y;
 
       if (maxWidth && maxWidth > 0) {
@@ -141,7 +152,7 @@ export async function injectText(
 
           if (textWidth > maxWidth && line !== '') {
             // Dibujar línea actual
-            firstPage.drawText(line, {
+            targetPage.drawText(line, {
               x: mapping.x,
               y: yPosition - yOffset,
               size: fontSize,
@@ -158,7 +169,7 @@ export async function injectText(
 
         // Dibujar última línea
         if (line) {
-          firstPage.drawText(line, {
+          targetPage.drawText(line, {
             x: mapping.x,
             y: yPosition - yOffset,
             size: fontSize,
@@ -168,7 +179,7 @@ export async function injectText(
         }
       } else {
         // Texto simple sin wrap
-        firstPage.drawText(value, {
+        targetPage.drawText(value, {
           x: mapping.x,
           y: yPosition,
           size: fontSize,
@@ -205,10 +216,16 @@ export async function injectCheckboxes(
       throw new Error('El PDF no tiene paginas');
     }
 
-    const firstPage = pages[0];
     const font = await pdf.embedFont(StandardFonts.HelveticaBold);
 
     const normalizeKey = (value: string) => value.trim().toLowerCase();
+
+    // Helper function to check if mapping is a direct coordinate
+    const isDirectCoordinate = (m: unknown): m is CheckboxCoordinate => {
+      return typeof m === 'object' && m !== null && 'x' in m && 'y' in m &&
+             typeof (m as CheckboxCoordinate).x === 'number' &&
+             typeof (m as CheckboxCoordinate).y === 'number';
+    };
 
     for (const [field, mapping] of Object.entries(mappings)) {
       const value = data[field];
@@ -216,9 +233,16 @@ export async function injectCheckboxes(
         continue;
       }
 
-      if ('x' in mapping && 'y' in mapping && typeof mapping.x === 'number' && typeof mapping.y === 'number') {
+      // Check if this is a direct coordinate (single checkbox)
+      if (isDirectCoordinate(mapping)) {
         if (value === true || value === 'true' || value === 'si') {
-          firstPage.drawText('X', {
+          const pageIndex = mapping.page || 0;
+          if (pageIndex >= pages.length) {
+            console.warn(`Página ${pageIndex} no existe para checkbox ${field}.`);
+            continue;
+          }
+          const targetPage = pages[pageIndex];
+          targetPage.drawText('X', {
             x: mapping.x,
             y: mapping.y,
             size: 12,
@@ -229,7 +253,8 @@ export async function injectCheckboxes(
         continue;
       }
 
-      const options = mapping as Record<string, { x: number; y: number }>;
+      // Otherwise it's a record of options
+      const options = mapping as Record<string, CheckboxCoordinate>;
       let key: string | undefined;
 
       if (typeof value === 'boolean') {
@@ -248,8 +273,13 @@ export async function injectCheckboxes(
         continue;
       }
 
-      const { x, y } = options[key];
-      firstPage.drawText('X', {
+      const { x, y, page: pageIndex = 0 } = options[key];
+      if (pageIndex >= pages.length) {
+        console.warn(`Página ${pageIndex} no existe para checkbox ${field}:${key}.`);
+        continue;
+      }
+      const targetPage = pages[pageIndex];
+      targetPage.drawText('X', {
         x,
         y,
         size: 12,
@@ -474,6 +504,236 @@ export async function createSamplePdf(): Promise<Uint8Array> {
     }
     throw new Error('Error desconocido creando PDF de ejemplo');
   }
+}
+
+/**
+ * Genera un PDF genérico con todos los datos del paciente/evento
+ * Se usa cuando no hay plantilla específica o siempre para mostrar los datos
+ */
+export async function createGenericDocument(
+  tipo: string,
+  data: Record<string, string>
+): Promise<Uint8Array> {
+  try {
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595, 842]); // A4
+    const { width, height } = page.getSize();
+
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    let y = height - 50;
+
+    // Encabezado
+    page.drawText('DOCUMENTO MÉDICO', {
+      x: 50, y, size: 18, font: fontBold, color: rgb(0, 0, 0),
+    });
+    y -= 25;
+
+    page.drawText(`Tipo: ${tipo}`, {
+      x: 50, y, size: 14, font: fontBold, color: rgb(0.3, 0.3, 0.3),
+    });
+    y -= 15;
+
+    page.drawLine({
+      start: { x: 50, y }, end: { x: width - 50, y },
+      thickness: 2, color: rgb(0.2, 0.4, 0.8),
+    });
+    y -= 30;
+
+    // Sección Paciente
+    page.drawText('DATOS DEL PACIENTE', {
+      x: 50, y, size: 12, font: fontBold, color: rgb(0.2, 0.4, 0.8),
+    });
+    y -= 20;
+
+    const pacienteFields = [
+      ['Nombre', data.nombreCompleto || ''],
+      ['RUT', data.rut || ''],
+      ['Fecha Nacimiento', data.fechaNac || ''],
+      ['Previsión', data.prevision || data.isapre || ''],
+    ];
+
+    for (const [label, value] of pacienteFields) {
+      if (value) {
+        page.drawText(`${label}:`, { x: 50, y, size: 11, font: fontBold, color: rgb(0, 0, 0) });
+        page.drawText(value, { x: 170, y, size: 11, font: fontRegular, color: rgb(0, 0, 0) });
+        y -= 18;
+      }
+    }
+
+    y -= 15;
+    page.drawLine({
+      start: { x: 50, y }, end: { x: width - 50, y },
+      thickness: 1, color: rgb(0.8, 0.8, 0.8),
+    });
+    y -= 20;
+
+    // Sección Clínica
+    if (data.clinica || data.direccionClinica) {
+      page.drawText('ESTABLECIMIENTO', {
+        x: 50, y, size: 12, font: fontBold, color: rgb(0.2, 0.4, 0.8),
+      });
+      y -= 20;
+
+      if (data.clinica) {
+        page.drawText('Clínica:', { x: 50, y, size: 11, font: fontBold, color: rgb(0, 0, 0) });
+        page.drawText(data.clinica, { x: 170, y, size: 11, font: fontRegular, color: rgb(0, 0, 0) });
+        y -= 18;
+      }
+      if (data.direccionClinica) {
+        page.drawText('Dirección:', { x: 50, y, size: 11, font: fontBold, color: rgb(0, 0, 0) });
+        page.drawText(data.direccionClinica, { x: 170, y, size: 11, font: fontRegular, color: rgb(0, 0, 0) });
+        y -= 18;
+      }
+
+      y -= 15;
+      page.drawLine({
+        start: { x: 50, y }, end: { x: width - 50, y },
+        thickness: 1, color: rgb(0.8, 0.8, 0.8),
+      });
+      y -= 20;
+    }
+
+    // Sección Diagnóstico/Procedimiento
+    page.drawText('INFORMACIÓN MÉDICA', {
+      x: 50, y, size: 12, font: fontBold, color: rgb(0.2, 0.4, 0.8),
+    });
+    y -= 20;
+
+    const medicoFields = [
+      ['Diagnóstico', data.diagnostico || ''],
+      ['Código CIE-10', data.codigoCie10 || ''],
+      ['Procedimiento', data.procedimiento || ''],
+      ['Código FONASA', data.codigoFonasa || ''],
+      ['Lateralidad', data.lateralidad || ''],
+      ['Fecha Cirugía', data.fechaCirugia || ''],
+      ['Tratamiento', data.tratamiento || ''],
+    ];
+
+    for (const [label, value] of medicoFields) {
+      if (value) {
+        page.drawText(`${label}:`, { x: 50, y, size: 11, font: fontBold, color: rgb(0, 0, 0) });
+        // Wrap largo texto
+        if (value.length > 60) {
+          const lines = wrapText(value, fontRegular, 11, width - 220);
+          for (const line of lines) {
+            page.drawText(line, { x: 170, y, size: 11, font: fontRegular, color: rgb(0, 0, 0) });
+            y -= 15;
+          }
+        } else {
+          page.drawText(value, { x: 170, y, size: 11, font: fontRegular, color: rgb(0, 0, 0) });
+          y -= 18;
+        }
+      }
+    }
+
+    // Equipo médico (si hay)
+    if (data.cirujano || data.anestesista) {
+      y -= 15;
+      page.drawLine({
+        start: { x: 50, y }, end: { x: width - 50, y },
+        thickness: 1, color: rgb(0.8, 0.8, 0.8),
+      });
+      y -= 20;
+
+      page.drawText('EQUIPO MÉDICO', {
+        x: 50, y, size: 12, font: fontBold, color: rgb(0.2, 0.4, 0.8),
+      });
+      y -= 20;
+
+      const equipoFields = [
+        ['Cirujano', data.cirujano || ''],
+        ['RUT Cirujano', data.rutCirujano || ''],
+        ['Anestesista', data.anestesista || ''],
+        ['Arsenalera', data.arsenalera || ''],
+        ['Ayudante 1', data.ayudante1 || ''],
+        ['Ayudante 2', data.ayudante2 || ''],
+      ];
+
+      for (const [label, value] of equipoFields) {
+        if (value) {
+          page.drawText(`${label}:`, { x: 50, y, size: 11, font: fontBold, color: rgb(0, 0, 0) });
+          page.drawText(value, { x: 170, y, size: 11, font: fontRegular, color: rgb(0, 0, 0) });
+          y -= 18;
+        }
+      }
+    }
+
+    // Opciones clínicas
+    const opciones = [];
+    if (data.alergiaLatex === 'Si') opciones.push('Alergia Látex');
+    if (data.requiereBiopsia === 'Si') opciones.push('Requiere Biopsia');
+    if (data.requiereRayos === 'Si') opciones.push('Requiere Rayos X');
+
+    if (opciones.length > 0) {
+      y -= 10;
+      page.drawText('Alertas:', { x: 50, y, size: 11, font: fontBold, color: rgb(0.8, 0, 0) });
+      page.drawText(opciones.join(' | '), { x: 130, y, size: 11, font: fontRegular, color: rgb(0.8, 0, 0) });
+      y -= 18;
+    }
+
+    // Riesgos (si consentimiento)
+    if (data.riesgos) {
+      y -= 15;
+      page.drawLine({
+        start: { x: 50, y }, end: { x: width - 50, y },
+        thickness: 1, color: rgb(0.8, 0.8, 0.8),
+      });
+      y -= 20;
+
+      page.drawText('RIESGOS Y COMPLICACIONES', {
+        x: 50, y, size: 12, font: fontBold, color: rgb(0.2, 0.4, 0.8),
+      });
+      y -= 20;
+
+      const riesgosLines = wrapText(data.riesgos, fontRegular, 10, width - 100);
+      for (const line of riesgosLines) {
+        page.drawText(line, { x: 50, y, size: 10, font: fontRegular, color: rgb(0, 0, 0) });
+        y -= 14;
+      }
+    }
+
+    // Footer
+    page.drawText(`Generado: ${data.fechaActual || new Date().toLocaleDateString('es-CL')}`, {
+      x: 50, y: 40, size: 9, font: fontRegular, color: rgb(0.5, 0.5, 0.5),
+    });
+    page.drawText('NeuroDoc - Sistema de Documentación Médica', {
+      x: 50, y: 25, size: 9, font: fontRegular, color: rgb(0.5, 0.5, 0.5),
+    });
+
+    return pdfDoc.save();
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(`Error creando documento genérico: ${error.message}`);
+    }
+    throw new Error('Error desconocido creando documento genérico');
+  }
+}
+
+// Helper para wrap de texto
+function wrapText(text: string, font: import('pdf-lib').PDFFont, fontSize: number, maxWidth: number): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+    const textWidth = font.widthOfTextAtSize(testLine, fontSize);
+
+    if (textWidth > maxWidth && currentLine) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine = testLine;
+    }
+  }
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines;
 }
 
 /**

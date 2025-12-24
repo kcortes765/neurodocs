@@ -19,9 +19,13 @@
     "fix": "npm run lint:fix && npm run prisma:format",
     "doctor": "node scripts/doctor.mjs",
     "bootstrap": "node scripts/bootstrap.mjs",
+    "pdf:test": "node scripts/test-pdf-mapping.mjs",
+    "pdf:generate": "npx tsx scripts/generate-test-pdfs.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.15",
+    "@prisma/adapter-libsql": "^7.2.0",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^3.0.3",
     "next": "^14.2.35",

@@ -76,13 +76,13 @@ export default function EventoQuirurgicoPage({ params }: { params: { id: string 
           throw new Error(pacienteJson.error || "Error cargando paciente");
         }
         if (!clinicasRes.ok) {
-          throw new Error(clinicasJson.error || "Error cargando clinicas");
+          throw new Error(clinicasJson.error || "Error cargando clínicas");
         }
         if (!procedimientosRes.ok) {
           throw new Error(procedimientosJson.error || "Error cargando procedimientos");
         }
         if (!equipoRes.ok) {
-          throw new Error(equipoJson.error || "Error cargando equipo medico");
+          throw new Error(equipoJson.error || "Error cargando equipo médico");
         }
 
         if (!active) return;
@@ -119,7 +119,7 @@ export default function EventoQuirurgicoPage({ params }: { params: { id: string 
 
   const handleSubmit = async (data: SurgicalEventFormData) => {
     if (!clinicaActiva) {
-      setError("Selecciona una clinica");
+      setError("Selecciona una clínica");
       return;
     }
 
@@ -155,7 +155,7 @@ export default function EventoQuirurgicoPage({ params }: { params: { id: string 
 
       const json = await res.json();
       if (!res.ok) {
-        throw new Error(json.error || "Error guardando evento quirurgico");
+        throw new Error(json.error || "Error guardando evento quirúrgico");
       }
 
       const eventoId = json?.data?.id as string | undefined;
@@ -180,7 +180,7 @@ export default function EventoQuirurgicoPage({ params }: { params: { id: string 
         setMissingDocs(docsData.missing || []);
       }
 
-      setMessage("Evento quirurgico guardado");
+      setMessage("Evento quirúrgico guardado");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error guardando evento");
     } finally {
@@ -195,7 +195,7 @@ export default function EventoQuirurgicoPage({ params }: { params: { id: string 
           <Link href={`/pacientes/${params.id}`} className="text-2xl text-gray-400 hover:text-gray-600">
             &larr;
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800">Evento quirurgico</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Evento Quirúrgico</h1>
         </div>
       </header>
 
@@ -231,7 +231,7 @@ export default function EventoQuirurgicoPage({ params }: { params: { id: string 
                 <p className="text-gray-900 font-medium">{paciente.rut}</p>
               </div>
               <div>
-                <p className="text-gray-500">Prevision</p>
+                <p className="text-gray-500">Previsión</p>
                 <p className="text-gray-900 font-medium">
                   {paciente.isapreNombre ? `ISAPRE ${paciente.isapreNombre}` : paciente.prevision}
                 </p>
@@ -252,7 +252,7 @@ export default function EventoQuirurgicoPage({ params }: { params: { id: string 
 
         {!loading && (
           <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Clinica</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Clínica</h2>
             <select
               value={clinicaActiva}
               onChange={(e) => {
@@ -261,7 +261,7 @@ export default function EventoQuirurgicoPage({ params }: { params: { id: string 
               }}
               className="w-full px-4 py-3 text-lg border-2 rounded-xl focus:border-blue-500 focus:outline-none bg-white"
             >
-              <option value="">Seleccionar clinica...</option>
+              <option value="">Seleccionar clínica...</option>
               {clinicas.map((clinica) => (
                 <option key={clinica.id} value={clinica.id}>
                   {clinica.nombre}

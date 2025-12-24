@@ -76,12 +76,12 @@ export default function Dashboard() {
   useEffect(() => {
     const query = submittedQuery.trim();
     if (query) {
-      fetchPacientes({ query, clinicaId: clinicaActiva || undefined });
+      fetchPacientes({ query });
       return;
     }
 
-    fetchPacientes({ limit: 5, clinicaId: clinicaActiva || undefined });
-  }, [clinicaActiva, submittedQuery]);
+    fetchPacientes({ limit: 5 });
+  }, [submittedQuery]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,7 +109,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">NeuroDoc</h1>
-                <p className="text-blue-200 text-sm">Sistema de Documentacion Medica</p>
+                <p className="text-blue-200 text-sm">Sistema de Documentación Médica</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export default function Dashboard() {
                 }}
                 className="px-4 py-3 text-lg border-2 border-blue-500 rounded-xl bg-white font-medium min-w-[250px]"
               >
-                <option value="">Seleccionar clinica...</option>
+                <option value="">Seleccionar clínica...</option>
                 {clinicas.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.nombre}
@@ -169,7 +169,7 @@ export default function Dashboard() {
         {!clinicaActiva && clinicas.length > 0 && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-yellow-800 text-lg">
-              Selecciona la clinica donde estas atendiendo hoy
+              Selecciona la clínica donde estás atendiendo hoy
             </p>
           </div>
         )}
@@ -206,12 +206,7 @@ export default function Dashboard() {
         <div className="bg-white rounded-xl shadow-sm border">
           <div className="px-6 py-4 border-b">
             <h2 className="text-xl font-semibold text-gray-700">
-              {submittedQuery ? "Resultados de busqueda" : "Ultimos pacientes"}
-              {clinicaActiva && clinicas.find(c => c.id === clinicaActiva) && (
-                <span className="text-sm font-normal text-gray-500 ml-2">
-                  (en {clinicas.find(c => c.id === clinicaActiva)?.nombre})
-                </span>
-              )}
+              {submittedQuery ? "Resultados de búsqueda" : "Últimos pacientes"}
             </h2>
           </div>
           <div className="divide-y">
@@ -253,7 +248,7 @@ export default function Dashboard() {
               href="/eventos-quirurgicos"
               className="px-6 py-5 text-lg font-medium text-center text-gray-700 bg-white border-2 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-colors"
             >
-              🏥 Ver cirugias programadas
+              🏥 Ver cirugías programadas
             </Link>
           </div>
         </div>

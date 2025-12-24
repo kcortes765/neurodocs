@@ -79,3 +79,57 @@ export async function PUT(
     )
   }
 }
+
+// DELETE: Elimina paciente y sus datos relacionados
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = params
+
+    const existente = await prisma.paciente.findUnique({
+      where: { id },
+    })
+
+    if (!existente) {
+      return NextResponse.json(
+        { error: 'Paciente no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    // Eliminar documentos de atenciones
+    await prisma.documento.deleteMany({
+      where: { atencion: { pacienteId: id } }
+    })
+
+    // Eliminar documentos de eventos quirurgicos
+    await prisma.documento.deleteMany({
+      where: { eventoQuirurgico: { pacienteId: id } }
+    })
+
+    // Eliminar atenciones
+    await prisma.atencion.deleteMany({
+      where: { pacienteId: id }
+    })
+
+    // Eliminar eventos quirurgicos
+    await prisma.eventoQuirurgico.deleteMany({
+      where: { pacienteId: id }
+    })
+
+    // Eliminar paciente
+    await prisma.paciente.delete({
+      where: { id }
+    })
+
+    return NextResponse.json({ message: 'Paciente eliminado' })
+  } catch (error) {
+    console.error('Error al eliminar paciente:', error)
+    return NextResponse.json(
+      { error: 'Error al eliminar paciente' },
+      { status: 500 }
+    )
+  }
+}

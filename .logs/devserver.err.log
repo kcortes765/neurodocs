@@ -87,3 +87,30 @@
 <w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
 <w>  at resolve commonjs C:\Seba\NeoData\neurodata\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
 <w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\Seba\NeoData\neurodata\.next\cache\webpack\server-development\4.pack.gz_' -> 'C:\Seba\NeoData\neurodata\.next\cache\webpack\server-development\4.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, lstat 'C:\Seba\NeoData\neurodata\.next\server\app\api\equipos-medicos'
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../../.next/server/app/api/equipos-medicos/route' in C:\Seba\NeoData\neurodata\node_modules\next\dist\server for build dependencies doesn't lead to expected result 'C:\Seba\NeoData\neurodata\.next\server\app\api\equipos-medicos\route.js', but to 'Error: Can't resolve '../../../../.next/server/app/api/equipos-medicos/route' in 'C:\Seba\NeoData\neurodata\node_modules\next\dist\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../../.next/server/app/api/equipos-medicos/route (expected C:\Seba\NeoData\neurodata\.next\server\app\api\equipos-medicos\route.js)
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\server\require.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\server\require.js
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\server\load-components.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\build\utils.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\build\utils.js
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\build\handle-externals.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\build\handle-externals.js
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs C:\Seba\NeoData\neurodata\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../../.next/server/app/api/procedimientos/route' in C:\Seba\NeoData\neurodata\node_modules\next\dist\server for build dependencies doesn't lead to expected result 'C:\Seba\NeoData\neurodata\.next\server\app\api\procedimientos\route.js', but to 'Error: Can't resolve '../../../../.next/server/app/api/procedimientos/route' in 'C:\Seba\NeoData\neurodata\node_modules\next\dist\server'' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../../.next/server/app/api/procedimientos/route (expected C:\Seba\NeoData\neurodata\.next\server\app\api\procedimientos\route.js)
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\server\require.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\server\require.js
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\server\load-components.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\server\load-components.js
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\build\utils.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\build\utils.js
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\build\handle-externals.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\build\handle-externals.js
+<w>  at file dependencies C:\Seba\NeoData\neurodata\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file C:\Seba\NeoData\neurodata\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs C:\Seba\NeoData\neurodata\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js

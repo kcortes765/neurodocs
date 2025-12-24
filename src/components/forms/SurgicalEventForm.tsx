@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react'
 import { Button, Input, Select, Toggle } from '../ui'
+import { DocumentSelector } from './DocumentSelector'
 
 export interface SurgicalEventFormData {
   fechaCirugia: string
-  diagnostico: string
-  codigoCie10: string
+  diagnóstico: string
+  códigoCie10: string
   procedimientoId: string
   lateralidad: string
   alergiaLatex: boolean
@@ -29,7 +30,7 @@ export interface EquipoMedicoOption {
 
 export interface ProcedimientoOption {
   id: string
-  codigoFonasa: string
+  códigoFonasa: string
   descripcion: string
 }
 
@@ -54,8 +55,8 @@ export const SurgicalEventForm: React.FC<SurgicalEventFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<SurgicalEventFormData>({
     fechaCirugia: '',
-    diagnostico: '',
-    codigoCie10: '',
+    diagnóstico: '',
+    códigoCie10: '',
     procedimientoId: '',
     lateralidad: '',
     alergiaLatex: false,
@@ -78,7 +79,7 @@ export const SurgicalEventForm: React.FC<SurgicalEventFormProps> = ({
     () =>
       procedimientos.map((p) => ({
         value: p.id,
-        label: `${p.codigoFonasa} - ${p.descripcion}`,
+        label: `${p.códigoFonasa} - ${p.descripcion}`,
       })),
     [procedimientos]
   )
@@ -105,8 +106,8 @@ export const SurgicalEventForm: React.FC<SurgicalEventFormProps> = ({
     if (!formData.fechaCirugia) {
       nextErrors.fechaCirugia = 'La fecha es obligatoria'
     }
-    if (!formData.diagnostico.trim()) {
-      nextErrors.diagnostico = 'El diagnostico es obligatorio'
+    if (!formData.diagnóstico.trim()) {
+      nextErrors.diagnóstico = 'El diagnóstico es obligatorio'
     }
     // riesgosDescripcion es opcional
 
@@ -127,11 +128,11 @@ export const SurgicalEventForm: React.FC<SurgicalEventFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="space-y-6">
-        <h3 className="text-xl font-bold text-gray-800">Datos de la cirugia</h3>
+        <h3 className="text-xl font-bold text-gray-800">Datos de la cirugía</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Input
-            label="Fecha de cirugia"
+            label="Fecha de cirugía"
             type="date"
             value={formData.fechaCirugia}
             onChange={handleChange('fechaCirugia')}
@@ -139,29 +140,29 @@ export const SurgicalEventForm: React.FC<SurgicalEventFormProps> = ({
             required
           />
           <Input
-            label="Codigo CIE-10"
-            value={formData.codigoCie10}
-            onChange={handleChange('codigoCie10')}
+            label="Código CIE-10"
+            value={formData.códigoCie10}
+            onChange={handleChange('códigoCie10')}
             placeholder="Ej: G44.1"
           />
         </div>
 
         <div>
           <label className="block text-lg font-semibold text-gray-700 mb-2">
-            Diagnostico <span className="text-red-500">*</span>
+            Diagnóstico <span className="text-red-500">*</span>
           </label>
           <textarea
-            value={formData.diagnostico}
-            onChange={(e) => handleChange('diagnostico')(e.target.value)}
+            value={formData.diagnóstico}
+            onChange={(e) => handleChange('diagnóstico')(e.target.value)}
             className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-              errors.diagnostico ? 'border-red-500' : 'border-gray-300'
+              errors.diagnóstico ? 'border-red-500' : 'border-gray-300'
             }`}
             rows={4}
-            placeholder="Diagnostico principal..."
+            placeholder="Diagnóstico principal..."
             required
           />
-          {errors.diagnostico && (
-            <p className="mt-2 text-base text-red-600 font-medium">{errors.diagnostico}</p>
+          {errors.diagnóstico && (
+            <p className="mt-2 text-base text-red-600 font-medium">{errors.diagnóstico}</p>
           )}
         </div>
 
@@ -221,7 +222,7 @@ export const SurgicalEventForm: React.FC<SurgicalEventFormProps> = ({
       </div>
 
       <div className="space-y-6 border-t-2 border-gray-100 pt-6">
-        <h3 className="text-xl font-bold text-gray-800">Equipo medico</h3>
+        <h3 className="text-xl font-bold text-gray-800">Equipo médico</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Select
             label="Cirujano"
@@ -287,30 +288,21 @@ export const SurgicalEventForm: React.FC<SurgicalEventFormProps> = ({
         </div>
       </div>
 
-      <div className="space-y-4 border-t-2 border-gray-100 pt-6">
-        <h3 className="text-xl font-bold text-gray-800">Documentos a generar</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Toggle
-            label="PAM"
-            checked={formData.generarPam}
-            onChange={handleToggle('generarPam')}
-          />
-          <Toggle
-            label="Solicitud pabellon"
-            checked={formData.generarPabellon}
-            onChange={handleToggle('generarPabellon')}
-          />
-          <Toggle
-            label="Consentimiento"
-            checked={formData.generarConsentimiento}
-            onChange={handleToggle('generarConsentimiento')}
-          />
-        </div>
+      <div className="border-t-2 border-gray-100 pt-6">
+        <DocumentSelector
+          generarPam={formData.generarPam}
+          generarPabellon={formData.generarPabellon}
+          generarConsentimiento={formData.generarConsentimiento}
+          onTogglePam={handleToggle('generarPam')}
+          onTogglePabellon={handleToggle('generarPabellon')}
+          onToggleConsentimiento={handleToggle('generarConsentimiento')}
+          disabled={loading}
+        />
       </div>
 
-      <div className="flex justify-end pt-4">
-        <Button type="submit" variant="primary" loading={loading}>
-          Guardar evento
+      <div className="flex justify-end pt-6 border-t-2 border-gray-100 mt-8">
+        <Button type="submit" variant="primary" loading={loading} className="min-w-[280px]">
+          {loading ? 'Guardando y generando...' : 'Guardar evento y generar documentos'}
         </Button>
       </div>
     </form>

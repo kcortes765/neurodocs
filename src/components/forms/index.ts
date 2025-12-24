@@ -11,3 +11,6 @@ export type {
   EquipoMedicoOption,
   ProcedimientoOption,
 } from './SurgicalEventForm';
+
+export { DocumentSelector } from './DocumentSelector';
+export type { DocumentSelectorProps } from './DocumentSelector';

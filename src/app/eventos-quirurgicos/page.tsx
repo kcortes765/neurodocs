@@ -87,7 +87,7 @@ export default function ListaEventosQuirurgicos() {
           <Link href="/" className="text-2xl text-gray-400 hover:text-gray-600">
             &larr;
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800">Eventos Quirurgicos</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Eventos Quirúrgicos</h1>
         </div>
       </header>
 
@@ -102,7 +102,7 @@ export default function ListaEventosQuirurgicos() {
                 : "bg-white text-gray-700 border hover:bg-gray-50"
             }`}
           >
-            Proximos
+            Próximos
           </button>
           <button
             onClick={() => setFiltroFecha("pasados")}
@@ -141,7 +141,7 @@ export default function ListaEventosQuirurgicos() {
             </div>
           ) : eventosFiltrados.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-500 text-lg">
-              No hay eventos quirurgicos {filtroFecha === "proximos" ? "programados" : ""}
+              No hay eventos quirúrgicos {filtroFecha === "proximos" ? "programados" : ""}
             </div>
           ) : (
             <div className="divide-y">

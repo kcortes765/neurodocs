@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface Clinica {
@@ -47,10 +48,79 @@ const formatDate = (value?: string | null) => {
 };
 
 export default function PacienteDetalle({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
   const [eventos, setEventos] = useState<EventoQuirurgico[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [editForm, setEditForm] = useState({
+    nombreCompleto: "",
+    fechaNac: "",
+    prevision: "",
+    isapreNombre: "",
+    antecedentes: "",
+  });
+
+  const handleDelete = async () => {
+    if (!confirm("¿Seguro que deseas eliminar este paciente? Se eliminaran todas sus atenciones y cirugias.")) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/pacientes/${params.id}`, { method: "DELETE" });
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || "Error eliminando paciente");
+      }
+
+      router.push("/pacientes");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error eliminando paciente");
+      setDeleting(false);
+    }
+  };
+
+  const startEditing = () => {
+    if (paciente) {
+      setEditForm({
+        nombreCompleto: paciente.nombreCompleto,
+        fechaNac: paciente.fechaNac ? paciente.fechaNac.split("T")[0] : "",
+        prevision: paciente.prevision,
+        isapreNombre: paciente.isapreNombre || "",
+        antecedentes: paciente.antecedentes || "",
+      });
+      setEditing(true);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/pacientes/${params.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(json.error || "Error guardando paciente");
+      }
+
+      setPaciente({ ...paciente!, ...json.data });
+      setEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error guardando paciente");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -121,36 +191,142 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
         {!loading && paciente && (
           <>
             <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Paciente</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg">
-                <div>
-                  <p className="text-gray-500">Nombre</p>
-                  <p className="text-gray-900 font-medium">{paciente.nombreCompleto}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">RUT</p>
-                  <p className="text-gray-900 font-medium">{paciente.rut}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Prevision</p>
-                  <p className="text-gray-900 font-medium">{paciente.prevision}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Fecha Nacimiento</p>
-                  <p className="text-gray-900 font-medium">{formatDate(paciente.fechaNac)}</p>
-                </div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Paciente</h2>
+                {!editing && (
+                  <button
+                    onClick={startEditing}
+                    className="px-4 py-2 text-lg font-medium text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-50"
+                  >
+                    Editar
+                  </button>
+                )}
               </div>
-              {paciente.isapreNombre && (
-                <div className="mt-4">
-                  <p className="text-gray-500">Isapre</p>
-                  <p className="text-gray-900">{paciente.isapreNombre}</p>
+
+              {editing ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-gray-500 mb-1">Nombre</label>
+                    <input
+                      type="text"
+                      value={editForm.nombreCompleto}
+                      onChange={(e) => setEditForm({ ...editForm, nombreCompleto: e.target.value })}
+                      className="w-full px-4 py-3 text-lg border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-500 mb-1">RUT (no editable)</label>
+                    <input
+                      type="text"
+                      value={paciente.rut}
+                      disabled
+                      className="w-full px-4 py-3 text-lg border-2 rounded-lg bg-gray-100 text-gray-500"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-500 mb-1">Fecha Nacimiento</label>
+                      <input
+                        type="date"
+                        value={editForm.fechaNac}
+                        onChange={(e) => setEditForm({ ...editForm, fechaNac: e.target.value })}
+                        className="w-full px-4 py-3 text-lg border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-gray-500 mb-1">Previsión</label>
+                      <select
+                        value={editForm.prevision}
+                        onChange={(e) => setEditForm({ ...editForm, prevision: e.target.value })}
+                        className="w-full px-4 py-3 text-lg border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                      >
+                        <option value="FONASA">FONASA</option>
+                        <option value="ISAPRE">ISAPRE</option>
+                        <option value="PARTICULAR">PARTICULAR</option>
+                      </select>
+                    </div>
+                  </div>
+                  {editForm.prevision === "ISAPRE" && (
+                    <div>
+                      <label className="block text-gray-500 mb-1">Nombre Isapre</label>
+                      <input
+                        type="text"
+                        value={editForm.isapreNombre}
+                        onChange={(e) => setEditForm({ ...editForm, isapreNombre: e.target.value })}
+                        className="w-full px-4 py-3 text-lg border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                        placeholder="Ej: Banmedica, Colmena, etc."
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-gray-500 mb-1">Antecedentes</label>
+                    <textarea
+                      value={editForm.antecedentes}
+                      onChange={(e) => setEditForm({ ...editForm, antecedentes: e.target.value })}
+                      rows={3}
+                      className="w-full px-4 py-3 text-lg border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="px-6 py-3 text-lg font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    >
+                      {saving ? "Guardando..." : "Guardar"}
+                    </button>
+                    <button
+                      onClick={() => setEditing(false)}
+                      disabled={saving}
+                      className="px-6 py-3 text-lg font-medium text-gray-700 border-2 rounded-lg hover:bg-gray-50"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
-              )}
-              {paciente.antecedentes && (
-                <div className="mt-4">
-                  <p className="text-gray-500">Antecedentes</p>
-                  <p className="text-gray-900">{paciente.antecedentes}</p>
-                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg">
+                    <div>
+                      <p className="text-gray-500">Nombre</p>
+                      <p className="text-gray-900 font-medium">{paciente.nombreCompleto}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">RUT</p>
+                      <p className="text-gray-900 font-medium">{paciente.rut}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Previsión</p>
+                      <p className="text-gray-900 font-medium">{paciente.prevision}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500">Fecha Nacimiento</p>
+                      <p className="text-gray-900 font-medium">{formatDate(paciente.fechaNac)}</p>
+                    </div>
+                  </div>
+                  {paciente.isapreNombre && (
+                    <div className="mt-4">
+                      <p className="text-gray-500">Isapre</p>
+                      <p className="text-gray-900">{paciente.isapreNombre}</p>
+                    </div>
+                  )}
+                  {paciente.antecedentes && (
+                    <div className="mt-4">
+                      <p className="text-gray-500">Antecedentes</p>
+                      <p className="text-gray-900">{paciente.antecedentes}</p>
+                    </div>
+                  )}
+
+                  <div className="mt-6 pt-4 border-t">
+                    <button
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      className="px-6 py-3 text-lg font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {deleting ? "Eliminando..." : "Eliminar Paciente"}
+                    </button>
+                  </div>
+                </>
               )}
             </div>
 
@@ -158,14 +334,14 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
               href={`/atencion/${paciente.id}`}
               className="block w-full px-6 py-4 text-lg font-semibold text-center text-white bg-green-600 rounded-xl hover:bg-green-700"
             >
-              + Nueva Atencion
+              + Nueva Atención
             </Link>
 
             <Link
               href={`/eventos-quirurgicos/${paciente.id}`}
               className="block w-full px-6 py-4 text-lg font-semibold text-center text-white bg-blue-600 rounded-xl hover:bg-blue-700"
             >
-              + Nuevo Evento Quirurgico
+              + Nuevo Evento Quirúrgico
             </Link>
 
             <div className="bg-white rounded-xl shadow-sm border">
@@ -186,7 +362,7 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
                             {atencion.diagnostico}
                           </p>
                           <p className="text-gray-500">
-                            {atencion.clinica?.nombre || "Clinica sin nombre"}
+                            {atencion.clinica?.nombre || "Clínica sin nombre"}
                           </p>
                           {atencion.tratamiento && (
                             <p className="text-sm text-gray-500">
@@ -206,7 +382,7 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
 
             <div className="bg-white rounded-xl shadow-sm border">
               <div className="px-6 py-4 border-b">
-                <h2 className="text-xl font-semibold text-gray-700">Eventos quirurgicos</h2>
+                <h2 className="text-xl font-semibold text-gray-700">Eventos quirúrgicos</h2>
               </div>
               {eventos.length === 0 ? (
                 <div className="px-6 py-8 text-center text-gray-500 text-lg">
@@ -222,7 +398,7 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
                             {evento.diagnostico}
                           </p>
                           <p className="text-gray-500">
-                            {evento.clinica?.nombre || "Clinica sin nombre"}
+                            {evento.clinica?.nombre || "Clínica sin nombre"}
                           </p>
                           {evento.procedimiento && (
                             <p className="text-sm text-gray-500">

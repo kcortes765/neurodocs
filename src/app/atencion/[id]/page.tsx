@@ -54,7 +54,7 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
           throw new Error(pacienteJson.error || "Error cargando paciente");
         }
         if (!clinicasRes.ok) {
-          throw new Error(clinicasJson.error || "Error cargando clinicas");
+          throw new Error(clinicasJson.error || "Error cargando clínicas");
         }
 
         if (!active) return;
@@ -89,7 +89,7 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
 
   const handleSubmit = async (data: AttentionFormData) => {
     if (!clinicaActiva) {
-      setError("Selecciona una clinica");
+      setError("Selecciona una clínica");
       return;
     }
 
@@ -114,7 +114,7 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
       const json = await res.json();
 
       if (!res.ok) {
-        throw new Error(json.error || "Error guardando atencion");
+        throw new Error(json.error || "Error guardando atención");
       }
 
       const atencionId = json?.data?.id as string | undefined;
@@ -143,10 +143,10 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
       }
 
       setMessage(
-        docsWarning ? `Atencion guardada, pero ${docsWarning}` : "Atencion guardada"
+        docsWarning ? `Atención guardada, pero ${docsWarning}` : "Atención guardada"
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error guardando atencion");
+      setError(err instanceof Error ? err.message : "Error guardando atención");
     } finally {
       setSaving(false);
     }
@@ -161,7 +161,7 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
           <Link href="/" className="text-2xl text-gray-400 hover:text-gray-600">
             &larr;
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800">Nueva Atencion</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Nueva Atención</h1>
         </div>
       </header>
 
@@ -197,7 +197,7 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
                 <p className="text-gray-900 font-medium">{paciente.rut}</p>
               </div>
               <div>
-                <p className="text-gray-500">Prevision</p>
+                <p className="text-gray-500">Previsión</p>
                 <p className="text-gray-900 font-medium">{paciente.prevision}</p>
               </div>
               <div>
@@ -216,7 +216,7 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
 
         {!loading && (
           <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Clinica</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Clínica</h2>
             <select
               value={clinicaActiva}
               onChange={(e) => {
@@ -225,7 +225,7 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
               }}
               className="w-full px-4 py-3 text-lg border-2 rounded-xl focus:border-blue-500 focus:outline-none bg-white"
             >
-              <option value="">Seleccionar clinica...</option>
+              <option value="">Seleccionar clínica...</option>
               {clinicas.map((clinica) => (
                 <option key={clinica.id} value={clinica.id}>
                   {clinica.nombre}
@@ -237,7 +237,7 @@ export default function AtencionPage({ params }: { params: { id: string } }) {
 
         {!loading && paciente && (
           <div className="bg-white rounded-xl shadow-sm border p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Atencion</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Atención</h2>
             <AttentionForm onSubmit={handleSubmit} loading={saving} />
             {pdfBase64 && (
               <div className="mt-6">

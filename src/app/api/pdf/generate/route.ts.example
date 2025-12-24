@@ -1,0 +1,186 @@
+/**
+ * API Route para generar PDFs
+ * Ejemplo de integración del sistema de mapeo PDF con Next.js App Router
+ *
+ * Para usar:
+ * 1. Renombrar este archivo a route.ts
+ * 2. Crear directorio: src/app/api/pdf/generate/
+ * 3. Mover route.ts a ese directorio
+ * 4. Implementar autenticación según necesidad
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  generateDocumentFromMapping,
+  pdfToBase64,
+} from '@/lib/pdf-generator';
+import {
+  SOLICITUD_PABELLON_BUPA,
+  CONSENTIMIENTO_GENERAL_BUPA,
+  UnifiedPatientData,
+  toSolicitudPabellonData,
+  toConsentimientoGeneralData,
+  getTemplateMapping,
+} from '@/lib/pdf-field-maps';
+
+/**
+ * POST /api/pdf/generate
+ *
+ * Body:
+ * {
+ *   "templateType": "pabellon" | "consentimiento" | "custom",
+ *   "templateName": "solicitud_de_pabellon__2_.pdf", // Solo para templateType=custom
+ *   "patientData": UnifiedPatientData,
+ *   "format": "pdf" | "base64" // default: pdf
+ * }
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const {
+      templateType,
+      templateName,
+      patientData,
+      format = 'pdf',
+    } = body;
+
+    // Validar datos requeridos
+    if (!templateType || !patientData) {
+      return NextResponse.json(
+        { error: 'Faltan campos requeridos: templateType, patientData' },
+        { status: 400 }
+      );
+    }
+
+    let pdfBytes: Uint8Array;
+    let filename: string;
+
+    // Generar PDF según tipo de plantilla
+    switch (templateType) {
+      case 'pabellon': {
+        const { text, checkboxes } = toSolicitudPabellonData(patientData);
+        pdfBytes = await generateDocumentFromMapping(
+          'solicitud_de_pabellon__2_.pdf',
+          SOLICITUD_PABELLON_BUPA,
+          text,
+          checkboxes
+        );
+        filename = `solicitud-pabellon-${patientData.rut || 'sin-rut'}.pdf`;
+        break;
+      }
+
+      case 'consentimiento': {
+        const { text, checkboxes } = toConsentimientoGeneralData(patientData);
+        pdfBytes = await generateDocumentFromMapping(
+          'cba_consentimiento_general.pdf',
+          CONSENTIMIENTO_GENERAL_BUPA,
+          text,
+          checkboxes
+        );
+        filename = `consentimiento-${patientData.rut || 'sin-rut'}.pdf`;
+        break;
+      }
+
+      case 'custom': {
+        if (!templateName) {
+          return NextResponse.json(
+            { error: 'templateName es requerido para templateType=custom' },
+            { status: 400 }
+          );
+        }
+
+        const mapping = getTemplateMapping(templateName);
+        if (!mapping) {
+          return NextResponse.json(
+            { error: `Plantilla no encontrada: ${templateName}` },
+            { status: 404 }
+          );
+        }
+
+        // Para plantillas personalizadas, el cliente debe enviar text y checkboxes
+        const { text, checkboxes } = body;
+        pdfBytes = await generateDocumentFromMapping(
+          templateName,
+          mapping,
+          text || {},
+          checkboxes || {}
+        );
+        filename = `documento-${Date.now()}.pdf`;
+        break;
+      }
+
+      default:
+        return NextResponse.json(
+          { error: `Tipo de plantilla no válido: ${templateType}` },
+          { status: 400 }
+        );
+    }
+
+    // Retornar según formato solicitado
+    if (format === 'base64') {
+      const base64 = pdfToBase64(pdfBytes);
+      return NextResponse.json({
+        success: true,
+        data: base64,
+        filename,
+        size: pdfBytes.length,
+      });
+    }
+
+    // Retornar PDF directamente
+    return new NextResponse(pdfBytes, {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Length': pdfBytes.length.toString(),
+      },
+    });
+  } catch (error) {
+    console.error('Error generando PDF:', error);
+    return NextResponse.json(
+      {
+        error: 'Error generando PDF',
+        details: error instanceof Error ? error.message : 'Error desconocido',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * GET /api/pdf/generate?templates=true
+ *
+ * Retorna lista de plantillas disponibles
+ */
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const showTemplates = searchParams.get('templates') === 'true';
+
+  if (showTemplates) {
+    return NextResponse.json({
+      templates: [
+        {
+          id: 'pabellon',
+          name: 'Solicitud de Pabellón - Clínica Bupa',
+          filename: 'solicitud_de_pabellon__2_.pdf',
+          type: 'pabellon',
+        },
+        {
+          id: 'consentimiento',
+          name: 'Consentimiento General - Clínica Bupa',
+          filename: 'cba_consentimiento_general.pdf',
+          type: 'consentimiento',
+        },
+      ],
+    });
+  }
+
+  return NextResponse.json({
+    message: 'PDF Generation API',
+    version: '1.0.0',
+    endpoints: {
+      POST: '/api/pdf/generate',
+      GET: '/api/pdf/generate?templates=true',
+    },
+  });
+}

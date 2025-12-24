@@ -5,10 +5,19 @@ import { getToken } from "next-auth/jwt"
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Rutas publicas que no requieren autenticacion
+  // Rutas publicas que no requieren autenticacion (temporalmente para setup)
   const publicPaths = [
     "/login",
     "/api/auth",
+    "/api/clinicas",
+    "/api/documentos",
+    "/api/plantillas",
+    "/api/pacientes",
+    "/api/seed",
+    "/api/eventos-quirurgicos",
+    "/api/atenciones",
+    "/api/procedimientos",
+    "/api/equipos-medicos",
   ]
 
   // Verificar si es una ruta publica

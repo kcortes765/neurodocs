@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface Paciente {
   id: string;
@@ -106,12 +107,18 @@ export default function Dashboard() {
           {/* Top bar */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-xl sm:text-2xl">🧠</span>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg flex items-center justify-center overflow-hidden">
+                <Image
+                  src="/logo.png"
+                  alt="NeuroMedic"
+                  width={48}
+                  height={48}
+                  className="object-contain"
+                />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-white">NeuroDoc</h1>
-                <p className="text-blue-200 text-xs sm:text-sm hidden sm:block">Sistema de Documentación Médica</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-white">NeuroMedic</h1>
+                <p className="text-blue-200 text-xs sm:text-sm hidden sm:block">Neurocirujanos</p>
               </div>
             </div>
 

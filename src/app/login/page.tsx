@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -50,11 +51,17 @@ export default function LoginPage() {
       <div className="w-full max-w-[90%] sm:max-w-md lg:max-w-lg">
         {/* Logo */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white rounded-2xl mx-auto mb-3 sm:mb-4 flex items-center justify-center shadow-lg">
-            <span className="text-3xl sm:text-4xl lg:text-5xl">🧠</span>
+          <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white rounded-2xl mx-auto mb-3 sm:mb-4 flex items-center justify-center shadow-lg overflow-hidden p-2">
+            <Image
+              src="/logo.png"
+              alt="NeuroMedic"
+              width={96}
+              height={96}
+              className="object-contain"
+            />
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">NeuroDoc</h1>
-          <p className="text-blue-200 mt-1 sm:mt-2 text-sm sm:text-base lg:text-lg">Sistema de Documentacion Medica</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">NeuroMedic</h1>
+          <p className="text-blue-200 mt-1 sm:mt-2 text-sm sm:text-base lg:text-lg">Neurocirujanos</p>
         </div>
 
         {/* Login Form */}
@@ -131,7 +138,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-blue-200 mt-4 sm:mt-6 text-xs sm:text-sm">
-          NeuroDoc Surgical Core v2.0
+          NeuroMedic v2.0
         </p>
       </div>
     </div>

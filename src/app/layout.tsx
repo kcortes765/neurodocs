@@ -6,8 +6,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "NeuroDoc Surgical Core",
-  description: "Sistema de documentacion medica para neurocirugia",
+  title: "NeuroMedic - Neurocirujanos",
+  description: "Sistema de documentación médica para neurocirugía",
 };
 
 export default function RootLayout({

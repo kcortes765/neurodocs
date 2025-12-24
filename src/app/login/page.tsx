@@ -50,14 +50,14 @@ export default function LoginPage() {
     <div className="min-h-screen min-h-[100dvh] bg-gradient-to-b from-blue-600 to-blue-800 flex items-center justify-center p-4 sm:p-6 md:p-8">
       <div className="w-full max-w-[90%] sm:max-w-md lg:max-w-lg">
         {/* Logo */}
-        <div className="text-center mb-6 sm:mb-8">
-          <div className="bg-white rounded-2xl mx-auto mb-3 sm:mb-4 flex items-center justify-center shadow-lg overflow-hidden p-3 sm:p-4 max-w-[280px] sm:max-w-[320px]">
+        <div className="text-center mb-4 sm:mb-6">
+          <div className="bg-white rounded-xl mx-auto flex items-center justify-center shadow-lg overflow-hidden px-3 py-2 w-fit">
             <Image
               src="/logo.jpg"
               alt="NeuroMedic Neurocirujanos"
-              width={300}
-              height={80}
-              className="object-contain w-full h-auto"
+              width={200}
+              height={55}
+              className="object-contain h-12 sm:h-14 w-auto"
             />
           </div>
         </div>

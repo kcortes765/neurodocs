@@ -11,7 +11,7 @@
  * Y_pdf = 842 - distancia_desde_arriba
  */
 
-import { TemplateMapping, FieldMapping, CheckboxMapping } from './pdf-generator';
+import { TemplateMapping } from './pdf-generator';
 
 // =============================================================================
 // SOLICITUD DE PABELLON - CLINICA BUPA ANTOFAGASTA

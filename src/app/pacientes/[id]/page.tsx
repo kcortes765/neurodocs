@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -27,6 +27,13 @@ interface EventoQuirurgico {
     codigoFonasa: string;
     descripcion: string;
   } | null;
+}
+
+interface DocumentoGenerado {
+  tipo: string;
+  plantillaNombre: string;
+  pdf: string;
+  warning?: string;
 }
 
 interface Paciente {
@@ -56,6 +63,10 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
+  const [documentos, setDocumentos] = useState<DocumentoGenerado[]>([]);
+  const menuRef = useRef<HTMLDivElement>(null);
   const [editForm, setEditForm] = useState({
     nombreCompleto: "",
     fechaNac: "",
@@ -63,6 +74,58 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
     isapreNombre: "",
     antecedentes: "",
   });
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const generatePdfForEvento = async (eventoId: string) => {
+    setGeneratingPdf(eventoId);
+    setDocumentos([]);
+    try {
+      const res = await fetch("/api/documentos/generar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventoQuirurgicoId: eventoId,
+          tipos: ["PAM", "PABELLON", "CONSENTIMIENTO"],
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Error generando documentos");
+      setDocumentos(json.data?.documentos || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error generando PDFs");
+    } finally {
+      setGeneratingPdf(null);
+    }
+  };
+
+  const generatePdfForAtencion = async (atencionId: string) => {
+    setGeneratingPdf(atencionId);
+    setDocumentos([]);
+    try {
+      const res = await fetch("/api/documentos/generar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ atencionId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Error generando documentos");
+      setDocumentos(json.data?.documentos || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error generando PDFs");
+    } finally {
+      setGeneratingPdf(null);
+    }
+  };
 
   const handleDelete = async () => {
     if (!confirm("¿Seguro que deseas eliminar este paciente? Se eliminaran todas sus atenciones y cirugias.")) {
@@ -194,12 +257,41 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-800">Paciente</h2>
                 {!editing && (
-                  <button
-                    onClick={startEditing}
-                    className="px-4 py-2 text-lg font-medium text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-50"
-                  >
-                    Editar
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={startEditing}
+                      className="px-4 py-2 text-lg font-medium text-blue-600 border-2 border-blue-600 rounded-lg hover:bg-blue-50"
+                    >
+                      Editar
+                    </button>
+                    <div className="relative" ref={menuRef}>
+                      <button
+                        onClick={() => setShowMenu(!showMenu)}
+                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                        title="Más opciones"
+                      >
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                          <circle cx="12" cy="5" r="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <circle cx="12" cy="19" r="2" />
+                        </svg>
+                      </button>
+                      {showMenu && (
+                        <div className="absolute right-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-10">
+                          <button
+                            onClick={() => {
+                              setShowMenu(false);
+                              handleDelete();
+                            }}
+                            disabled={deleting}
+                            className="w-full px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                          >
+                            {deleting ? "Eliminando..." : "Eliminar paciente"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -316,16 +408,6 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
                       <p className="text-gray-900">{paciente.antecedentes}</p>
                     </div>
                   )}
-
-                  <div className="mt-6 pt-4 border-t">
-                    <button
-                      onClick={handleDelete}
-                      disabled={deleting}
-                      className="px-6 py-3 text-lg font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
-                    >
-                      {deleting ? "Eliminando..." : "Eliminar Paciente"}
-                    </button>
-                  </div>
                 </>
               )}
             </div>
@@ -357,7 +439,7 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
                   {paciente.atenciones.map((atencion) => (
                     <div key={atencion.id} className="px-6 py-4">
                       <div className="flex items-start justify-between gap-4">
-                        <div>
+                        <div className="flex-1">
                           <p className="text-lg font-medium text-gray-800">
                             {atencion.diagnostico}
                           </p>
@@ -370,9 +452,18 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
                             </p>
                           )}
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(atencion.fecha)}
-                        </span>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className="text-sm text-gray-500">
+                            {formatDate(atencion.fecha)}
+                          </span>
+                          <button
+                            onClick={() => generatePdfForAtencion(atencion.id)}
+                            disabled={generatingPdf === atencion.id}
+                            className="px-3 py-1.5 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 disabled:opacity-50"
+                          >
+                            {generatingPdf === atencion.id ? "Generando..." : "Generar PDF"}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -393,7 +484,7 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
                   {eventos.map((evento) => (
                     <div key={evento.id} className="px-6 py-4">
                       <div className="flex items-start justify-between gap-4">
-                        <div>
+                        <div className="flex-1">
                           <p className="text-lg font-medium text-gray-800">
                             {evento.diagnostico}
                           </p>
@@ -406,15 +497,67 @@ export default function PacienteDetalle({ params }: { params: { id: string } }) 
                             </p>
                           )}
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(evento.fechaCirugia)}
-                        </span>
+                        <div className="flex flex-col items-end gap-2">
+                          <span className="text-sm text-gray-500">
+                            {formatDate(evento.fechaCirugia)}
+                          </span>
+                          <button
+                            onClick={() => generatePdfForEvento(evento.id)}
+                            disabled={generatingPdf === evento.id}
+                            className="px-3 py-1.5 text-sm font-medium text-green-600 border border-green-600 rounded-lg hover:bg-green-50 disabled:opacity-50"
+                          >
+                            {generatingPdf === evento.id ? "Generando..." : "Generar PDFs"}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
+
+            {/* Documentos generados */}
+            {documentos.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-800">Documentos generados</h2>
+                  <button
+                    onClick={() => setDocumentos([])}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {documentos.map((doc) => {
+                    const url = `data:application/pdf;base64,${doc.pdf}`;
+                    return (
+                      <div
+                        key={`${doc.tipo}-${doc.plantillaNombre}`}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border rounded-lg p-4"
+                      >
+                        <div>
+                          <p className="text-lg font-medium text-gray-800">{doc.tipo}</p>
+                          <p className="text-sm text-gray-500">{doc.plantillaNombre}</p>
+                          {doc.warning && (
+                            <p className="text-sm text-yellow-600">{doc.warning}</p>
+                          )}
+                        </div>
+                        <a
+                          href={url}
+                          download={`${doc.tipo}-${paciente?.rut || "paciente"}.pdf`}
+                          className="inline-flex items-center justify-center px-5 py-2 text-lg font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                        >
+                          Descargar PDF
+                        </a>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>

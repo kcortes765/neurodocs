@@ -3,15 +3,10 @@ import { PrismaClient } from '@prisma/client'
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
 function createPrismaClient(): PrismaClient {
-  // En Vercel con Turso, DATABASE_URL viene de las env vars
-  // Formato: libsql://db-name.turso.io?authToken=xxx
-  return new PrismaClient({
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-  })
+  // DATABASE_URL puede ser:
+  // - Local: file:./prisma/dev.db
+  // - Turso: libsql://xxx.turso.io?authToken=xxx
+  return new PrismaClient()
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient()

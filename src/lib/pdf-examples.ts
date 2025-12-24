@@ -5,7 +5,6 @@
  */
 
 import {
-  loadPdfTemplate,
   generateDocumentFromMapping,
   savePdfToFile,
 } from './pdf-generator';

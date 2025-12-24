@@ -4,8 +4,8 @@
  */
 
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import type { FieldMapping, CheckboxMapping, TemplateMapping } from './pdf-generator';
-import type { CoordinateValidationResult, CoordinateConfig } from '@/types/pdf';
+import type { TemplateMapping, CheckboxCoordinate } from './pdf-generator';
+import type { CoordinateValidationResult } from '@/types/pdf';
 
 /**
  * Valida que las coordenadas estén dentro del rango válido para un PDF A4
@@ -68,10 +68,18 @@ export function validateTemplateMapping(mapping: TemplateMapping): CoordinateVal
     });
   }
 
+  // Helper to check if value is a direct CheckboxCoordinate
+  const isCheckboxCoordinate = (val: unknown): val is CheckboxCoordinate => {
+    return typeof val === 'object' && val !== null &&
+           'x' in val && 'y' in val &&
+           typeof (val as CheckboxCoordinate).x === 'number' &&
+           typeof (val as CheckboxCoordinate).y === 'number';
+  };
+
   // Validar checkboxes
   if (mapping.checkboxes) {
     Object.entries(mapping.checkboxes).forEach(([field, checkboxDef]) => {
-      if ('x' in checkboxDef && 'y' in checkboxDef) {
+      if (isCheckboxCoordinate(checkboxDef)) {
         // Checkbox simple
         const validation = validateCoordinates(checkboxDef.x, checkboxDef.y);
         validation.errors.forEach(error => {
@@ -82,8 +90,9 @@ export function validateTemplateMapping(mapping: TemplateMapping): CoordinateVal
         });
       } else {
         // Checkbox con opciones
-        Object.entries(checkboxDef).forEach(([option, coords]) => {
-          if ('x' in coords && 'y' in coords) {
+        const options = checkboxDef as Record<string, CheckboxCoordinate>;
+        Object.entries(options).forEach(([option, coords]) => {
+          if (isCheckboxCoordinate(coords)) {
             const validation = validateCoordinates(coords.x, coords.y);
             validation.errors.forEach(error => {
               errors.push(`Checkbox "${field}" opción "${option}": ${error}`);
@@ -349,10 +358,18 @@ export async function generateMappingPreview(
     });
   }
 
+  // Helper to check if value is a direct CheckboxCoordinate
+  const isCheckboxCoord = (val: unknown): val is CheckboxCoordinate => {
+    return typeof val === 'object' && val !== null &&
+           'x' in val && 'y' in val &&
+           typeof (val as CheckboxCoordinate).x === 'number' &&
+           typeof (val as CheckboxCoordinate).y === 'number';
+  };
+
   // Dibujar checkboxes
   if (mapping.checkboxes) {
     Object.entries(mapping.checkboxes).forEach(([field, checkboxDef]) => {
-      if ('x' in checkboxDef && 'y' in checkboxDef) {
+      if (isCheckboxCoord(checkboxDef)) {
         // Checkbox simple
         const targetPage = checkboxDef.page === undefined ? page : pdfDoc.getPages()[checkboxDef.page];
         if (!targetPage) return;
@@ -374,8 +391,9 @@ export async function generateMappingPreview(
         });
       } else {
         // Checkbox con opciones
-        Object.entries(checkboxDef).forEach(([option, coords]) => {
-          if ('x' in coords && 'y' in coords) {
+        const options = checkboxDef as Record<string, CheckboxCoordinate>;
+        Object.entries(options).forEach(([option, coords]) => {
+          if (isCheckboxCoord(coords)) {
             const targetPage = coords.page === undefined ? page : pdfDoc.getPages()[coords.page];
             if (!targetPage) return;
 

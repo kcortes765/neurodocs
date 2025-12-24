@@ -1,5 +1,4 @@
 import React from 'react'
-import { Card } from '../ui'
 
 export interface DocumentSelectorProps {
   generarPam: boolean

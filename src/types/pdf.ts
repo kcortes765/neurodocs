@@ -6,7 +6,6 @@
 import type {
   FieldMapping,
   CheckboxMapping,
-  TemplateMapping,
 } from '@/lib/pdf-generator';
 import type { UnifiedPatientData } from '@/lib/pdf-field-maps';
 

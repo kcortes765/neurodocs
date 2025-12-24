@@ -29,6 +29,19 @@ npm run bootstrap
 - DATABASE_URL en .env (si no existe, copiar .env.example)
 - Para inicializar: npm run db:push
 
+## Deploy en Vercel
+
+SQLite en archivo no es persistente en Vercel. Usa una DB externa (Turso/LibSQL) y configura estas variables:
+
+- DATABASE_URL="libsql://<tu-db>.turso.io"
+- DATABASE_AUTH_TOKEN="..."
+- NEXTAUTH_URL="https://<tu-proyecto>.vercel.app"
+- NEXTAUTH_SECRET="..."
+- AUTH_USER="admin"
+- AUTH_PASSWORD="..."
+
+Luego corre `npx prisma db push` apuntando a esa URL para crear el schema.
+
 ## Datos de prueba
 
 - En la pantalla principal: "Generar datos de prueba"

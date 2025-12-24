@@ -54,7 +54,18 @@ const checkDatabase = () => {
     return;
   }
   if (!databaseUrl.startsWith('file:')) {
-    logOk(`DATABASE_URL uses non-file provider (${databaseUrl}).`);
+    const safeUrl = databaseUrl.split('?')[0];
+    logOk(`DATABASE_URL uses non-file provider (${safeUrl}).`);
+    const hasAuthToken =
+      databaseUrl.includes('authToken=') ||
+      process.env.DATABASE_AUTH_TOKEN ||
+      process.env.TURSO_AUTH_TOKEN;
+    if (
+      (databaseUrl.includes('turso.io') || databaseUrl.startsWith('libsql://')) &&
+      !hasAuthToken
+    ) {
+      logWarn('libsql DATABASE_URL missing auth token. Set DATABASE_AUTH_TOKEN or add ?authToken= to DATABASE_URL.');
+    }
     return;
   }
   const relativePath = databaseUrl.replace('file:', '');
@@ -94,7 +105,19 @@ const checkDatabase = () => {
 
 const listPdfFiles = (dir) => {
   try {
-    return readdirSync(dir).filter((file) => file.toLowerCase().endsWith('.pdf'));
+    const entries = readdirSync(dir, { withFileTypes: true });
+    const files = [];
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        files.push(...listPdfFiles(fullPath));
+        continue;
+      }
+      if (entry.name.toLowerCase().endsWith('.pdf')) {
+        files.push(fullPath);
+      }
+    }
+    return files;
   } catch {
     return [];
   }

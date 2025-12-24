@@ -6,6 +6,13 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
 function createPrismaClient(): PrismaClient {
   const databaseUrl = process.env.DATABASE_URL || ''
+  const isVercel = Boolean(process.env.VERCEL)
+
+  if (isVercel && databaseUrl.startsWith('file:')) {
+    throw new Error(
+      '[DB] SQLite file URLs are not supported on Vercel. Use libsql:// (Turso) or another hosted DB.'
+    )
+  }
 
   // Si es URL de Turso (libsql://)
   if (databaseUrl.includes('turso.io') || databaseUrl.startsWith('libsql://')) {
@@ -21,6 +28,17 @@ function createPrismaClient(): PrismaClient {
           break
         }
       }
+    }
+
+    if (!authToken) {
+      authToken =
+        process.env.DATABASE_AUTH_TOKEN ||
+        process.env.TURSO_AUTH_TOKEN ||
+        ''
+    }
+
+    if (!authToken) {
+      console.warn('[DB] Missing libsql auth token. Set DATABASE_AUTH_TOKEN or add ?authToken= to DATABASE_URL.')
     }
 
     console.log('[DB] Usando Turso:', baseUrl)

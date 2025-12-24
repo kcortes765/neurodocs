@@ -4,7 +4,7 @@
 
 Sistema de automatización de documentos médicos para neurocirujano. Genera PDFs (recetas, certificados, documentos quirúrgicos) desde datos de pacientes.
 
-**Stack**: Next.js 14 (App Router) + Tailwind CSS + SQLite/Prisma + pdf-lib + NextAuth.js
+**Stack**: Next.js 14 (App Router) + Tailwind CSS + Prisma (SQLite local / LibSQL-Turso en Vercel) + pdf-lib + NextAuth.js
 
 ---
 
